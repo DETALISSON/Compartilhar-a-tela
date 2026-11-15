@@ -5,130 +5,265 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sala de Telas</title>
 <style>
-  :root { --bg:#0f1115; --card:#181b22; --line:#2a2f3a; --txt:#e8eaf0; --mut:#8b93a5; --acc:#5b8cff; }
+  :root {
+    --bg:#0b0d12; --panel:#141821; --panel2:#1b2030; --line:#262c3b; --txt:#eceff6; --mut:#8c95a9;
+    --acc:#6c8cff; --acc2:#8a6cff; --ok:#3ddc84; --red:#ef4f5f;
+  }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; }
-  header { padding:16px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-  header h1 { font-size:18px; margin:0; }
-  main { padding:20px; max-width:1500px; margin:0 auto; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; }
-  .center { max-width:520px; margin:40px auto; }
-  button, select, input { font:inherit; border-radius:8px; border:1px solid var(--line); background:#0f1115; color:var(--txt); padding:10px 14px; }
-  button { background:var(--acc); border:none; cursor:pointer; font-weight:600; }
-  button.sec { background:#262b36; }
-  button.danger { background:#d94c4c; }
-  button:disabled { opacity:.5; cursor:not-allowed; }
-  label.chk { display:flex; gap:6px; align-items:center; font-size:14px; }
-  label.chk input { width:auto; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center; }
-  .mut { color:var(--mut); font-size:14px; }
-  .err { color:#ff8a8a; }
-  .warn { color:#ffd166; font-size:14px; margin:10px 0 0; }
-  .link { background:#0f1115; border:1px dashed var(--line); padding:10px; border-radius:8px; word-break:break-all; font-size:14px; flex:1; min-width:200px; }
-  .people { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-  .chip { background:#262b36; border-radius:999px; padding:4px 12px; font-size:13px; }
-  .chip.live { outline:1px solid #3ddc84; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr)); gap:16px; margin-top:20px; }
-  .tile { background:#000; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-  .tile.big { grid-column:1 / -1; }
-  .tile video { width:100%; display:block; background:#000; aspect-ratio:16/9; object-fit:contain; }
-  .tile.big video { max-height:80vh; }
-  .bar { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--card); font-size:14px; gap:8px; flex-wrap:wrap; }
-  .bar button { padding:6px 10px; font-size:13px; }
+  html,body { height:100%; }
+  body { margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif; background:radial-gradient(1200px 600px at 20% -10%, #1a2140 0%, var(--bg) 55%); color:var(--txt); }
+  button, select, input { font:inherit; color:var(--txt); }
+  input, select { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; outline:none; }
+  input:focus, select:focus { border-color:var(--acc); }
+  button { cursor:pointer; border:none; border-radius:10px; padding:10px 16px; font-weight:600; background:linear-gradient(135deg,var(--acc),var(--acc2)); }
+  button.sec { background:var(--panel2); border:1px solid var(--line); }
+  button.danger { background:var(--red); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
   .hidden { display:none !important; }
-  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#3ddc84; margin-right:6px; }
-  .empty { text-align:center; padding:60px 20px; color:var(--mut); }
+  .mut { color:var(--mut); }
+
+  /* Telas iniciais */
+  .center { max-width:460px; margin:12vh auto 0; padding:28px; background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .center h2 { margin:0 0 8px; font-size:22px; }
+  .center p { margin:0 0 18px; line-height:1.5; }
+  .center input { width:100%; margin-bottom:12px; }
+  .center button { width:100%; padding:12px; }
+  .brand { text-align:center; font-size:15px; letter-spacing:.3px; margin:0 0 18px; color:var(--mut); }
+  .err { color:#ff8a8a; }
+
+  /* App */
+  .app { display:flex; flex-direction:column; height:100vh; }
+  .top { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--line); background:rgba(11,13,18,.7); backdrop-filter:blur(8px); }
+  .logo { font-weight:800; font-size:17px; }
+  .pill { display:inline-flex; align-items:center; gap:8px; background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:13px; }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--ok); box-shadow:0 0 8px var(--ok); }
+  .spacer { flex:1; }
+  .body { flex:1; display:flex; min-height:0; }
+  .stage { flex:1; overflow:auto; padding:18px 18px 110px; }
+  .side { width:250px; border-left:1px solid var(--line); padding:16px; overflow:auto; background:rgba(20,24,33,.6); }
+  .side h3 { margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--mut); }
+  .person { display:flex; align-items:center; gap:10px; padding:7px 6px; border-radius:10px; }
+  .person:hover { background:var(--panel2); }
+  .avatar { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:14px; flex:none; }
+  .pname { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; }
+  .live { background:var(--red); font-size:10px; font-weight:800; letter-spacing:.5px; padding:2px 6px; border-radius:6px; }
+
+  .banner { margin:0 0 14px; padding:10px 14px; border-radius:10px; background:#3a2f12; border:1px solid #6b5518; color:#ffd98a; font-size:14px; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr)); gap:14px; }
+  .grid:has(.tile:only-child) { grid-template-columns:1fr; }
+  .tile { position:relative; background:#000; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .tile.big { grid-column:1 / -1; }
+  .tile video { width:100%; display:block; aspect-ratio:16/9; max-height:calc(100vh - 190px); object-fit:contain; background:#000; }
+  .tag { position:absolute; left:10px; bottom:10px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,.6); border-radius:8px; padding:4px 10px; font-size:13px; backdrop-filter:blur(4px); }
+  .tag .info { color:var(--mut); font-size:12px; }
+  .ctl { position:absolute; top:10px; right:10px; display:flex; gap:6px; opacity:0; transition:opacity .15s; }
+  .tile:hover .ctl { opacity:1; }
+  @media (hover:none) { .ctl { opacity:1; } }
+  .ctl button { padding:6px 10px; background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.12); }
+
+  .empty { display:grid; place-items:center; min-height:50vh; text-align:center; color:var(--mut); }
+  .empty .big { font-size:54px; margin-bottom:8px; }
+  .empty h3 { color:var(--txt); margin:0 0 6px; }
+
+  /* Barra inferior */
+  .dock { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); display:flex; gap:10px; align-items:center; padding:10px; background:rgba(27,32,48,.92); backdrop-filter:blur(10px); border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.5); z-index:5; }
+  .dock button { padding:12px 20px; }
+
+  /* Configurações */
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); display:grid; place-items:center; z-index:20; padding:16px; }
+  .sheet { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; width:min(560px,100%); max-height:90vh; overflow:auto; }
+  .sheet h3 { margin:0 0 14px; }
+  .field { display:grid; gap:6px; margin-bottom:14px; }
+  .field label { font-size:13px; color:var(--mut); }
+  .field select, .field input[type=number] { width:100%; }
+  .chk { display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:14px; }
+  .chk input { width:auto; }
+  details { margin:6px 0 14px; font-size:13px; color:var(--mut); }
+  details li { margin:6px 0; line-height:1.45; }
+  summary { cursor:pointer; }
+
+  /* Avisos */
+  #toasts { position:fixed; top:16px; right:16px; display:grid; gap:8px; z-index:30; max-width:min(360px,calc(100vw - 32px)); }
+  .toast { background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--acc); border-radius:10px; padding:10px 14px; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,.4); animation:in .2s ease; }
+  .toast.warn { border-left-color:#ffb020; }
+  @keyframes in { from { opacity:0; transform:translateY(-6px); } }
+
+  @media (max-width:860px) {
+    .side { position:fixed; right:0; top:58px; bottom:0; width:240px; z-index:8; box-shadow:-10px 0 30px rgba(0,0,0,.5); }
+    #togglePeople { display:inline-flex !important; }
+  }
+  #togglePeople { display:none; }
 </style>
 </head>
 <body>
-<header><h1>🖥️ Sala de Telas</h1><span class="mut" id="status"></span></header>
-<main>
 
-  <section id="fatal" class="card center hidden">
-    <h2 style="margin-top:0" class="err">Não foi possível continuar</h2>
-    <p class="mut" id="fatalMsg"></p>
-  </section>
+<div id="toasts"></div>
 
-  <!-- Criar sala -->
-  <section id="home" class="card center hidden">
-    <h2 style="margin-top:0">Criar sala</h2>
-    <p class="mut">Todos na sala podem compartilhar a tela e ver as telas dos outros, como no Discord, mas sem voz.</p>
-    <button id="createRoom">Criar sala</button>
-  </section>
+<section id="fatal" class="center hidden">
+  <h2 class="err">Não foi possível continuar</h2>
+  <p class="mut" id="fatalMsg"></p>
+</section>
 
-  <!-- Entrar -->
-  <section id="join" class="card center hidden">
-    <h2 style="margin-top:0" id="joinTitle">Entrar na sala</h2>
-    <div class="row"><input id="name" placeholder="Seu nome" style="flex:1" maxlength="24"></div>
-    <div class="row"><button id="joinBtn">Entrar</button></div>
-  </section>
+<section id="home" class="center hidden">
+  <div class="brand">🖥️ SALA DE TELAS</div>
+  <h2>Criar sala</h2>
+  <p class="mut">Todos na sala podem compartilhar a tela e ver as telas dos outros. Como o Discord, só que sem voz.</p>
+  <button id="createRoom">Criar sala</button>
+</section>
 
-  <!-- Sala -->
-  <section id="room" class="hidden">
-    <div class="card">
-      <div class="row" style="margin-top:0">
-        <b>Link para convidar:</b>
-        <div class="link" id="shareLink"></div>
-        <button class="sec" id="copyLink">Copiar link</button>
+<section id="join" class="center hidden">
+  <div class="brand">🖥️ SALA DE TELAS</div>
+  <h2 id="joinTitle">Entrar na sala</h2>
+  <p class="mut">Escolha um nome para os outros te identificarem.</p>
+  <input id="name" placeholder="Seu nome" maxlength="24" autocomplete="off">
+  <button id="joinBtn">Entrar</button>
+</section>
+
+<div id="app" class="app hidden">
+  <header class="top">
+    <span class="logo">🖥️ Sala de Telas</span>
+    <span class="pill"><span class="dot"></span><span id="statusText">Conectado</span> · <span id="count">1 na call</span></span>
+    <span class="spacer"></span>
+    <button class="sec" id="togglePeople">👥</button>
+    <button class="sec" id="copyLink">🔗 Convidar</button>
+    <button class="sec" id="openSettings">⚙️ Ajustes</button>
+  </header>
+
+  <div class="body">
+    <main class="stage">
+      <div class="banner hidden" id="banner"></div>
+      <div class="empty" id="empty">
+        <div>
+          <div class="big">🖥️</div>
+          <h3>Ninguém está compartilhando ainda</h3>
+          <div>Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.</div>
+        </div>
       </div>
-      <div class="people" id="people"></div>
-      <p class="warn hidden" id="notice"></p>
+      <div class="grid" id="grid"></div>
+    </main>
+    <aside class="side" id="side">
+      <h3 id="sideTitle">Na call</h3>
+      <div id="peopleList"></div>
+    </aside>
+  </div>
+
+  <div class="dock">
+    <button id="startShare">🖥️ Compartilhar tela</button>
+    <button id="stopShare" class="danger hidden">⏹ Parar de compartilhar</button>
+    <button class="sec" id="openSettings2">⚙️</button>
+  </div>
+</div>
+
+<!-- Ajustes -->
+<div id="settings" class="modal hidden">
+  <div class="sheet">
+    <h3>Ajustes de compartilhamento</h3>
+
+    <div class="field"><label for="quality">Qualidade</label>
+      <select id="quality">
+        <option value="720,30">720p · 30 fps (leve)</option>
+        <option value="720,60">720p · 60 fps</option>
+        <option value="1080,30">1080p · 30 fps</option>
+        <option value="1080,60" selected>1080p · 60 fps</option>
+        <option value="1440,60">1440p · 60 fps</option>
+        <option value="2160,30">4K · 30 fps</option>
+      </select>
+    </div>
+    <div class="field"><label for="mode">Prioridade</label>
+      <select id="mode">
+        <option value="detail">Nitidez (apps, texto)</option>
+        <option value="motion" selected>Fluidez (jogos, vídeo)</option>
+      </select>
+    </div>
+    <div class="field"><label for="codec">Codec de vídeo</label>
+      <select id="codec">
+        <option value="video/h264" selected>H.264 (usa a placa de vídeo)</option>
+        <option value="video/av1">AV1 (placas novas)</option>
+        <option value="video/vp9">VP9 (usa mais CPU)</option>
+        <option value="video/vp8">VP8 (usa mais CPU)</option>
+      </select>
+    </div>
+    <div class="field"><label for="upload">Meu upload (Mbps), dividido entre quem assiste</label>
+      <input type="number" id="upload" value="15" min="2" max="1000">
     </div>
 
-    <div class="card" style="margin-top:16px">
-      <div class="row" style="margin-top:0">
-        <select id="quality" title="Qualidade">
-          <option value="1080,30">1080p · 30 fps</option>
-          <option value="1080,60" selected>1080p · 60 fps</option>
-          <option value="1440,60">1440p · 60 fps</option>
-          <option value="2160,30">4K · 30 fps</option>
-        </select>
-        <select id="mode" title="Prioridade">
-          <option value="detail">Foco em nitidez (apps, texto)</option>
-          <option value="motion" selected>Foco em fluidez (jogos, vídeo)</option>
-        </select>
-        <label class="chk"><input type="checkbox" id="audio"> Incluir áudio da tela</label>
-        <label class="chk" title="Sua velocidade de upload. O site divide entre quem está assistindo.">Meu upload (Mbps)
-          <input type="number" id="upload" value="15" min="2" max="1000" style="width:80px;padding:6px 8px">
-        </label>
-        <button id="startShare">Compartilhar minha tela</button>
-        <button id="stopShare" class="danger hidden">Parar de compartilhar</button>
-      </div>
-      <p class="mut hidden" id="mobileWarn">⚠️ Este navegador não permite compartilhar a tela (comum em celulares). Aqui você consegue só assistir.</p>
+    <label class="chk"><input type="checkbox" id="audio"> Incluir áudio</label>
+    <div class="field"><label for="audioSrc">Origem do áudio</label>
+      <select id="audioSrc">
+        <option value="display">Áudio da aba/tela escolhida</option>
+        <option value="device">Dispositivo de áudio (cabo virtual)</option>
+      </select>
+    </div>
+    <div class="field hidden" id="audioDevField"><label for="audioDev">Dispositivo</label>
+      <select id="audioDev"></select>
     </div>
 
-    <div class="empty" id="empty">Ninguém está compartilhando ainda.</div>
-    <div class="grid" id="grid"></div>
-  </section>
+    <p class="mut hidden" id="mobileWarn">⚠️ Este navegador não permite compartilhar a tela (comum em celulares). Aqui você só assiste.</p>
 
-</main>
+    <details><summary>Dicas para não pesar no jogo</summary>
+      <ul>
+        <li>Áudio de um site: compartilhe a aba e marque "compartilhar áudio da aba". Só o som dela vai.</li>
+        <li>Áudio de um jogo: use um cabo virtual (VB-Cable). No Mixer de volume do Windows, mande o jogo para "CABLE Input" e o Discord para os fones. Aqui, escolha "Dispositivo de áudio" e "CABLE Output".</li>
+        <li>Use Chrome, Edge ou Brave com a aceleração de hardware ligada e codec H.264.</li>
+        <li>Se pesar, use 720p ou 1080p a 30 fps. Rode o jogo em janela sem bordas.</li>
+        <li>Para conferir se a GPU codifica: abra chrome://webrtc-internals (brave://webrtc-internals) e veja o encoderImplementation.</li>
+      </ul>
+    </details>
+
+    <button id="closeSettings" style="width:100%">Fechar</button>
+  </div>
+</div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
+  const hue = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+
+  const toast = (msg, warn = false) => {
+    const t = document.createElement('div');
+    t.className = 'toast' + (warn ? ' warn' : '');
+    t.textContent = msg;
+    $('toasts').appendChild(t);
+    setTimeout(() => t.remove(), 4500);
+  };
+  const banner = msg => { $('banner').textContent = msg; $('banner').classList.toggle('hidden', !msg); };
   const fatal = msg => {
-    ['home','join','room'].forEach(i => $(i).classList.add('hidden'));
+    ['home', 'join', 'app'].forEach(i => $(i).classList.add('hidden'));
     $('fatalMsg').textContent = msg;
     $('fatal').classList.remove('hidden');
   };
-  const notice = msg => { $('notice').textContent = msg; $('notice').classList.toggle('hidden', !msg); };
 
   if (typeof Peer === 'undefined') {
-    fatal('A biblioteca de conexão (PeerJS) não carregou. Isso acontece em pré-visualizações com scripts externos bloqueados ou sem internet. Hospede o arquivo em um site com HTTPS (Netlify, GitHub Pages, Cloudflare Pages) e abra por lá.');
+    fatal('A biblioteca de conexão (PeerJS) não carregou. Hospede o arquivo em um site com HTTPS (Netlify, GitHub Pages) e abra por lá.');
     return;
   }
-  if (!window.isSecureContext) { fatal('Esta página precisa ser aberta por HTTPS (ou localhost).'); return; }
+  if (!window.isSecureContext) { fatal('Esta página precisa ser aberta por HTTPS.'); return; }
 
   const rawHash = decodeURIComponent(location.hash.replace('#', '').trim());
   const isHost = rawHash.startsWith('host=');
   const roomId = isHost ? rawHash.slice(5) : rawHash;
   const rand = () => 'sala-' + Math.random().toString(36).slice(2, 8);
-  const MAX_BITRATE = { 1080: 12e6, 1440: 20e6, 2160: 40e6 };
+  const MAX_BITRATE = { 720: 6e6, 1080: 12e6, 1440: 20e6, 2160: 40e6 };
+
+  // Se algum amigo não conectar (rede restrita), preencha um servidor TURN aqui. Exemplo:
+  // { urls: 'turn:SEU_SERVIDOR:3478', username: 'usuario', credential: 'senha' }
+  const TURN_SERVERS = [];
   const peerOpts = { config: { iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    ...TURN_SERVERS
   ]}};
+
+  /* ---------- Ajustes ---------- */
+  const openSettings = () => $('settings').classList.remove('hidden');
+  const closeSettings = () => $('settings').classList.add('hidden');
+  $('openSettings').onclick = openSettings;
+  $('openSettings2').onclick = openSettings;
+  $('closeSettings').onclick = closeSettings;
+  $('settings').onclick = e => { if (e.target === $('settings')) closeSettings(); };
+  $('togglePeople').onclick = () => { const s = $('side'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; };
 
   if (!roomId) {
     $('home').classList.remove('hidden');
@@ -137,25 +272,28 @@
   }
 
   $('join').classList.remove('hidden');
-  $('joinTitle').textContent = isHost ? 'Criar sala: qual é o seu nome?' : 'Entrar na sala';
+  $('joinTitle').textContent = isHost ? 'Criar sala' : 'Entrar na sala';
   try { $('name').value = localStorage.getItem('nome') || ''; } catch {}
-  $('joinBtn').onclick = () => {
+  const go = () => {
     const name = $('name').value.trim() || 'Amigo';
     try { localStorage.setItem('nome', name); } catch {}
     $('join').classList.add('hidden');
     enter(name);
   };
+  $('joinBtn').onclick = go;
+  $('name').onkeydown = e => { if (e.key === 'Enter') go(); };
 
   /* ---------- Estado ---------- */
-  let peer, hubConn, inRoom = false;
+  let peer, hubConn, inRoom = false, hubLost = false, lastHub = Date.now();
   const me = { id: null, name: '' };
-  const participants = new Map();   // id -> nome (todos, menos eu)
-  const hubConns = new Map();       // (só quem criou) id -> conexão de dados
-  const outCalls = new Map();       // id -> chamada que eu envio
-  const tiles = new Map();          // id -> { el, call, timer, stream }
+  const participants = new Map();   // id -> nome (todos na call, menos eu)
+  const hubConns = new Map();       // (só o criador) id -> conexão de dados
+  const outCalls = new Map();
+  const tiles = new Map();
+  const warned = new Set();
   let stream = null, curH = 1080, curFps = 60;
 
-  /* ---------- Entrada na sala ---------- */
+  /* ---------- Entrada ---------- */
   function enter(name) {
     me.name = name;
     peer = isHost ? new Peer(roomId, peerOpts) : new Peer(peerOpts);
@@ -163,87 +301,130 @@
     peer.on('error', e => {
       if (e.type === 'unavailable-id') fatal('Esta sala já está aberta em outra aba ou aparelho. Feche a outra ou crie uma nova sala.');
       else if (e.type === 'peer-unavailable' && !inRoom) fatal('Sala não encontrada. Confira o link e veja se o criador está com a sala aberta.');
-      else if (e.type !== 'peer-unavailable') notice('Erro de conexão: ' + e.type);
+      else if (e.type !== 'peer-unavailable') toast('Erro de conexão: ' + e.type, true);
     });
+    peer.on('disconnected', () => { try { peer.reconnect(); } catch {} });
     peer.on('call', onIncomingCall);
 
     peer.on('open', id => {
       me.id = id;
-      $('room').classList.remove('hidden');
-      $('shareLink').textContent = location.href.split('#')[0] + '#' + roomId;
+      $('app').classList.remove('hidden');
       $('copyLink').onclick = () => {
-        navigator.clipboard.writeText($('shareLink').textContent);
-        $('copyLink').textContent = 'Copiado!';
-        setTimeout(() => $('copyLink').textContent = 'Copiar link', 1500);
+        navigator.clipboard.writeText(location.href.split('#')[0] + '#' + roomId);
+        toast('Link da sala copiado!');
       };
       if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) {
         $('mobileWarn').classList.remove('hidden');
         $('startShare').disabled = true;
+        toast('Este navegador não permite compartilhar a tela. Aqui você só assiste.', true);
       }
-      if (isHost) { inRoom = true; setupHub(); $('status').innerHTML = '<span class="dot"></span>Sala ativa'; }
+      if (isHost) { inRoom = true; setupHub(); }
       else joinHub();
       renderPeople();
     });
   }
 
-  /* Quem cria a sala funciona como "recepção": avisa a todos quem entra e sai */
+  /* O criador funciona como recepção: avisa quem entra e quem sai */
   function setupHub() {
     peer.on('connection', conn => {
       conn.on('open', () => {
         const name = (conn.metadata && conn.metadata.name) || 'Amigo';
+        conn.lastSeen = Date.now();
         const list = [{ id: me.id, name: me.name }];
         hubConns.forEach((c, id) => list.push({ id, name: participants.get(id) || 'Amigo' }));
         conn.send({ t: 'peers', list });
-        hubConns.forEach(c => c.send({ t: 'joined', id: conn.peer, name }));
+        hubConns.forEach(c => { try { c.send({ t: 'joined', id: conn.peer, name }); } catch {} });
         hubConns.set(conn.peer, conn);
-        addParticipant(conn.peer, name);
+        addParticipant(conn.peer, name, true);
       });
-      conn.on('close', () => {
-        hubConns.delete(conn.peer);
-        hubConns.forEach(c => c.send({ t: 'left', id: conn.peer }));
-        removeParticipant(conn.peer);
+      conn.on('data', m => {
+        conn.lastSeen = Date.now();
+        if (m && m.t === 'bye') hubDrop(conn.peer);
       });
+      conn.on('close', () => hubDrop(conn.peer));
+      conn.on('error', () => hubDrop(conn.peer));
     });
+
+    // Batimento: derruba quem sumiu sem avisar (aba fechada, internet caiu)
+    setInterval(() => {
+      const now = Date.now();
+      hubConns.forEach((c, id) => {
+        if (now - (c.lastSeen || now) > 10000) { try { c.close(); } catch {} hubDrop(id); }
+        else { try { c.send({ t: 'hb' }); } catch {} }
+      });
+    }, 3000);
+  }
+
+  function hubDrop(id) {
+    if (!hubConns.has(id)) return;
+    hubConns.delete(id);
+    hubConns.forEach(c => { try { c.send({ t: 'left', id }); } catch {} });
+    removeParticipant(id, true);
   }
 
   function joinHub() {
     hubConn = peer.connect(roomId, { metadata: { name: me.name }, reliable: true });
     const timeout = setTimeout(() => { if (!inRoom) fatal('Não consegui entrar na sala. Veja se o criador está com ela aberta.'); }, 12000);
-    hubConn.on('open', () => { clearTimeout(timeout); inRoom = true; $('status').innerHTML = '<span class="dot"></span>Conectado'; });
+    hubConn.on('open', () => { clearTimeout(timeout); inRoom = true; lastHub = Date.now(); });
     hubConn.on('data', m => {
-      if (m.t === 'peers') m.list.forEach(p => addParticipant(p.id, p.name));
-      else if (m.t === 'joined') addParticipant(m.id, m.name);
-      else if (m.t === 'left') removeParticipant(m.id);
+      lastHub = Date.now();
+      if (m.t === 'peers') m.list.forEach(p => addParticipant(p.id, p.name, false));
+      else if (m.t === 'joined') addParticipant(m.id, m.name, true);
+      else if (m.t === 'left') removeParticipant(m.id, true);
     });
-    hubConn.on('close', () => {
-      if (inRoom) notice('O criador da sala saiu. Quem já está conectado continua, mas novas pessoas não conseguem entrar.');
-    });
+    hubConn.on('close', hubGone);
+    setInterval(() => {
+      if (!inRoom || hubLost) return;
+      try { hubConn.send({ t: 'hb' }); } catch {}
+      if (Date.now() - lastHub > 12000) hubGone();
+    }, 3000);
+  }
+  function hubGone() {
+    if (!inRoom || hubLost) return;
+    hubLost = true;
+    banner('O criador da sala saiu. Quem já está conectado continua, mas novas pessoas não conseguem entrar.');
   }
 
-  /* ---------- Participantes ---------- */
-  function addParticipant(id, name) {
+  /* ---------- Quem está na call ---------- */
+  function addParticipant(id, name, announce) {
+    const isNew = !participants.has(id);
     participants.set(id, name);
+    if (isNew && announce) toast(name + ' entrou');
     renderPeople();
     if (stream) callPeer(id);
   }
-  function removeParticipant(id) {
+  function removeParticipant(id, announce) {
+    const name = participants.get(id);
+    if (name === undefined) return;
     participants.delete(id);
+    warned.delete(id);
     const c = outCalls.get(id);
-    if (c) { c.close(); outCalls.delete(id); applyBitrates(); }
+    if (c) { try { c.close(); } catch {} outCalls.delete(id); applyBitrates(); }
     removeTile(id);
+    if (announce) toast(name + ' saiu');
     renderPeople();
   }
   function renderPeople() {
-    const box = $('people');
+    const box = $('peopleList');
     box.innerHTML = '';
-    const add = (label, live) => {
-      const s = document.createElement('span');
-      s.className = 'chip' + (live ? ' live' : '');
-      s.textContent = label;
-      box.appendChild(s);
+    const row = (id, name, isMe) => {
+      const r = document.createElement('div'); r.className = 'person';
+      const av = document.createElement('div'); av.className = 'avatar';
+      av.textContent = (name[0] || '?').toUpperCase();
+      av.style.background = `hsl(${hue(name)} 55% 42%)`;
+      const nm = document.createElement('span'); nm.className = 'pname';
+      nm.textContent = name + (isMe ? ' (você)' : '');
+      r.append(av, nm);
+      if (isMe ? !!stream : tiles.has(id)) {
+        const b = document.createElement('span'); b.className = 'live'; b.textContent = 'AO VIVO'; r.append(b);
+      }
+      box.append(r);
     };
-    add(me.name + ' (você)', !!stream);
-    participants.forEach((n, id) => add(n, tiles.has(id)));
+    row(me.id, me.name, true);
+    participants.forEach((n, id) => row(id, n, false));
+    const total = participants.size + 1;
+    $('count').textContent = total + (total === 1 ? ' na call' : ' na call');
+    $('sideTitle').textContent = 'Na call · ' + total;
   }
 
   /* ---------- Receber telas ---------- */
@@ -260,17 +441,16 @@
     if (old) removeTile(key);
     const el = document.createElement('div');
     el.className = 'tile';
-    el.innerHTML = '<video autoplay playsinline></video><div class="bar"><span><b></b> <span class="mut info"></span></span><span class="btns"></span></div>';
+    el.innerHTML = '<video autoplay playsinline></video><div class="tag"><b></b><span class="info"></span></div><div class="ctl"></div>';
     el.querySelector('b').textContent = name;
     const v = el.querySelector('video');
     v.srcObject = s; v.muted = true; v.play().catch(() => {});
-    const btns = el.querySelector('.btns');
-    const mk = (txt, fn) => { const b = document.createElement('button'); b.className = 'sec'; b.textContent = txt; b.onclick = fn; btns.appendChild(b); return b; };
-    if (!local) {
-      mk('🔇', e => { v.muted = !v.muted; e.target.textContent = v.muted ? '🔇' : '🔊'; });
-    }
-    mk('Ampliar', e => { el.classList.toggle('big'); e.target.textContent = el.classList.contains('big') ? 'Reduzir' : 'Ampliar'; });
-    mk('Tela cheia', () => v.requestFullscreen && v.requestFullscreen());
+    v.ondblclick = () => (document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen && v.requestFullscreen());
+    const ctl = el.querySelector('.ctl');
+    const btn = (txt, title, fn) => { const b = document.createElement('button'); b.textContent = txt; b.title = title; b.onclick = fn; ctl.appendChild(b); return b; };
+    if (!local) btn('🔇', 'Som', e => { v.muted = !v.muted; e.target.textContent = v.muted ? '🔇' : '🔊'; });
+    btn('⤢', 'Ampliar', () => el.classList.toggle('big'));
+    btn('⛶', 'Tela cheia', () => v.requestFullscreen && v.requestFullscreen());
     $('grid').appendChild(el);
     const timer = setInterval(() => {
       if (v.videoWidth) el.querySelector('.info').textContent = v.videoWidth + '×' + v.videoHeight;
@@ -282,7 +462,7 @@
   function removeTile(key, call) {
     const t = tiles.get(key);
     if (!t) return;
-    if (call && t.call !== call) return;   // chamada antiga, já substituída
+    if (call && t.call !== call) return;
     clearInterval(t.timer);
     t.el.remove();
     tiles.delete(key);
@@ -291,13 +471,31 @@
   function refreshEmpty() { $('empty').classList.toggle('hidden', tiles.size > 0); }
 
   /* ---------- Enviar minha tela ---------- */
+  function preferCodec(pc, mime) {
+    try {
+      const caps = RTCRtpSender.getCapabilities('video').codecs;
+      const pref = caps.filter(c => c.mimeType.toLowerCase() === mime);
+      if (!pref.length) return;
+      const rest = caps.filter(c => c.mimeType.toLowerCase() !== mime);
+      pc.getTransceivers().forEach(t => {
+        if (t.sender && t.sender.track && t.sender.track.kind === 'video') t.setCodecPreferences([...pref, ...rest]);
+      });
+    } catch {}
+  }
+
+  const LOCKED = ['quality', 'mode', 'audio', 'codec', 'audioSrc', 'audioDev'];
+
   $('startShare').onclick = async () => {
     const [h, fps] = $('quality').value.split(',').map(Number);
     curH = h; curFps = fps;
     try {
       stream = await navigator.mediaDevices.getDisplayMedia({
         video: { width: { ideal: Math.round(h * 16 / 9) }, height: { ideal: h }, frameRate: { ideal: fps } },
-        audio: $('audio').checked
+        audio: ($('audio').checked && $('audioSrc').value === 'display') ? {
+          echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+          suppressLocalAudioPlayback: true
+        } : false,
+        systemAudio: 'include'
       });
     } catch (e) { stream = null; return; }
 
@@ -305,9 +503,19 @@
     try { vt.contentHint = $('mode').value; } catch {}
     vt.onended = stopShare;
 
+    if ($('audio').checked && $('audioSrc').value === 'device') {
+      try {
+        const a = await navigator.mediaDevices.getUserMedia({ audio: {
+          deviceId: { exact: $('audioDev').value },
+          echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2
+        }});
+        a.getAudioTracks().forEach(t => stream.addTrack(t));
+      } catch { toast('Não consegui usar o dispositivo de áudio escolhido. Compartilhando sem som.', true); }
+    }
+
     $('startShare').classList.add('hidden');
     $('stopShare').classList.remove('hidden');
-    ['quality','mode','audio'].forEach(i => $(i).disabled = true);
+    LOCKED.forEach(i => $(i).disabled = true);
     addTile('local', me.name + ' (prévia)', stream, null, true);
     participants.forEach((n, id) => callPeer(id));
     renderPeople();
@@ -321,24 +529,27 @@
       sdpTransform: sdp => sdp.replace(/(m=video[^\r\n]*\r\n)/, '$1b=AS:' + Math.round(cap / 1000) + '\r\n')
     });
     if (!call) return;
+    if (call.peerConnection) preferCodec(call.peerConnection, $('codec').value);
     outCalls.set(id, call);
     const gone = () => { if (outCalls.get(id) === call) { outCalls.delete(id); applyBitrates(); } };
     call.on('close', gone);
     call.on('error', gone);
     const pc = call.peerConnection;
     if (pc) pc.addEventListener('connectionstatechange', () => {
-      if (pc.connectionState === 'connected') applyBitrates();
-      if (pc.connectionState === 'failed') notice('Falha de conexão com um participante (rede restrita?). Pode ser necessário um servidor TURN.');
+      if (pc.connectionState === 'connected') { warned.delete(id); applyBitrates(); }
+      if (pc.connectionState === 'failed' && participants.has(id) && !warned.has(id)) {
+        warned.add(id);
+        toast('Não consegui conectar com ' + participants.get(id) + ' (rede restrita?). Pode ser preciso um servidor TURN.', true);
+      }
     });
     applyBitrates();
   }
 
-  /* Divide o seu upload entre quem está assistindo */
   async function applyBitrates() {
     if (!stream) return;
     const n = Math.max(outCalls.size, 1);
     const budget = (parseFloat($('upload').value) || 10) * 1e6;
-    const per = Math.max(1.5e6, Math.min(MAX_BITRATE[curH], budget / n));
+    const per = Math.max(2.5e6, Math.min(MAX_BITRATE[curH], budget / n));
     for (const call of outCalls.values()) {
       const pc = call.peerConnection;
       if (!pc) continue;
@@ -355,21 +566,50 @@
   }
   $('upload').onchange = applyBitrates;
 
+  $('audioSrc').onchange = async () => {
+    const dev = $('audioSrc').value === 'device';
+    $('audioDevField').classList.toggle('hidden', !dev);
+    if (!dev) return;
+    try {
+      const t = await navigator.mediaDevices.getUserMedia({ audio: true });
+      t.getTracks().forEach(x => x.stop());
+      const list = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audioinput');
+      $('audioDev').innerHTML = '';
+      list.forEach(d => {
+        const o = document.createElement('option');
+        o.value = d.deviceId; o.textContent = d.label || 'Dispositivo de áudio';
+        $('audioDev').appendChild(o);
+      });
+      const cable = [...$('audioDev').options].find(o => /cable|virtual|voicemeeter/i.test(o.textContent));
+      if (cable) cable.selected = true;
+    } catch {
+      toast('Não consegui acessar os dispositivos de áudio. Permita o acesso ao microfone no navegador.', true);
+      $('audioSrc').value = 'display';
+      $('audioDevField').classList.add('hidden');
+    }
+  };
+
   function stopShare() {
     if (!stream) return;
     stream.getTracks().forEach(t => t.stop());
-    outCalls.forEach(c => c.close());
+    outCalls.forEach(c => { try { c.close(); } catch {} });
     outCalls.clear();
     stream = null;
     removeTile('local');
     $('startShare').classList.remove('hidden');
     $('stopShare').classList.add('hidden');
-    ['quality','mode','audio'].forEach(i => $(i).disabled = false);
+    LOCKED.forEach(i => $(i).disabled = false);
     renderPeople();
   }
   $('stopShare').onclick = stopShare;
 
-  window.addEventListener('beforeunload', () => { try { peer && peer.destroy(); } catch {} });
+  /* Avisa a sala quando eu saio, para meu nome sumir da lista na hora */
+  const leave = () => {
+    try { if (hubConn && hubConn.open) hubConn.send({ t: 'bye' }); } catch {}
+    try { peer && peer.destroy(); } catch {}
+  };
+  window.addEventListener('pagehide', leave);
+  window.addEventListener('beforeunload', leave);
 })();
 </script>
 </body>
