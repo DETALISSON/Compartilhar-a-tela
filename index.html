@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sala de Telas</title>
+<style>
+  :root { --bg:#0f1115; --card:#181b22; --line:#2a2f3a; --txt:#e8eaf0; --mut:#8b93a5; --acc:#5b8cff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; }
+  header { padding:16px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:18px; margin:0; }
+  main { padding:20px; max-width:1400px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:520px; margin:40px auto; }
+  button, select, input { font:inherit; border-radius:8px; border:1px solid var(--line); background:#0f1115; color:var(--txt); padding:10px 14px; }
+  button { background:var(--acc); border:none; cursor:pointer; font-weight:600; }
+  button.sec { background:#262b36; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center; }
+  .mut { color:var(--mut); font-size:14px; }
+  .err { color:#ff8a8a; }
+  .link { background:#0f1115; border:1px dashed var(--line); padding:10px; border-radius:8px; word-break:break-all; font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr)); gap:16px; }
+  .tile { background:#000; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .tile video { width:100%; display:block; background:#000; aspect-ratio:16/9; object-fit:contain; }
+  .bar { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--card); font-size:14px; gap:8px; }
+  .hidden { display:none !important; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#3ddc84; margin-right:6px; }
+</style>
+</head>
+<body>
+<header><h1>🖥️ Sala de Telas</h1><span class="mut" id="status"></span></header>
+<main>
+
+  <section id="fatal" class="card hidden">
+    <h2 style="margin-top:0" class="err">Não foi possível carregar</h2>
+    <p class="mut" id="fatalMsg"></p>
+  </section>
+
+  <section id="home" class="card hidden">
+    <h2 style="margin-top:0">Criar sala</h2>
+    <p class="mut">Você será quem assiste. Seus amigos abrem o link que você enviar e só precisam clicar em "Compartilhar tela".</p>
+    <button id="createRoom">Criar sala</button>
+  </section>
+
+  <section id="host" class="hidden">
+    <div class="card" style="max-width:none;margin:0 0 20px">
+      <b>Link para enviar aos amigos:</b>
+      <div class="link" id="shareLink" style="margin-top:8px"></div>
+      <div class="row">
+        <button id="copyLink">Copiar link</button>
+        <span class="mut" id="count">Nenhuma tela ainda</span>
+      </div>
+      <p class="mut">Mantenha esta aba aberta. Para reabrir a mesma sala depois, use o endereço atual desta página.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="guest" class="card hidden">
+    <h2 style="margin-top:0">Compartilhar minha tela</h2>
+    <div class="row"><input id="name" placeholder="Seu nome" style="flex:1"></div>
+    <div class="row">
+      <select id="quality">
+        <option value="1080,30">1080p · 30 fps</option>
+        <option value="1080,60" selected>1080p · 60 fps</option>
+        <option value="1440,60">1440p · 60 fps</option>
+        <option value="2160,30">4K · 30 fps</option>
+      </select>
+      <select id="mode">
+        <option value="detail">Foco em nitidez (apps, texto)</option>
+        <option value="motion" selected>Foco em fluidez (jogos, vídeo)</option>
+      </select>
+    </div>
+    <div class="row">
+      <button id="startShare">Compartilhar tela</button>
+      <button id="stopShare" class="sec hidden">Parar</button>
+    </div>
+    <p class="mut" id="guestMsg"></p>
+    <p class="mut hidden" id="mobileWarn">⚠️ Navegadores de celular não permitem compartilhar a tela. Neste aparelho não dá para compartilhar por aqui.</p>
+  </section>
+
+</main>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fatal = msg => { $('fatalMsg').textContent = msg; $('fatal').classList.remove('hidden'); };
+
+  if (typeof Peer === 'undefined') {
+    fatal('A biblioteca de conexão (PeerJS) não carregou. Isso acontece em pré-visualizações com scripts externos bloqueados ou sem internet. Hospede o arquivo em um site com HTTPS (Netlify, GitHub Pages, Cloudflare Pages) e abra por lá.');
+    return;
+  }
+  if (!window.isSecureContext) {
+    fatal('Esta página precisa ser aberta por HTTPS (ou localhost) para compartilhar tela.');
+    return;
+  }
+
+  const rawHash = decodeURIComponent(location.hash.replace('#', '').trim());
+  const isHost = rawHash.startsWith('host=');
+  const roomId = isHost ? rawHash.slice(5) : rawHash;
+  const rand = () => 'sala-' + Math.random().toString(36).slice(2, 8);
+  const MAX_BITRATE = { 1080: 12_000_000, 1440: 20_000_000, 2160: 40_000_000 };
+  const peerOpts = { config: { iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]}};
+
+  if (!roomId) {
+    $('home').classList.remove('hidden');
+    $('createRoom').onclick = () => { location.hash = 'host=' + rand(); location.reload(); };
+    return;
+  }
+
+  /* ---------- ANFITRIÃO ---------- */
+  if (isHost) {
+    const peer = new Peer(roomId, peerOpts);
+    peer.on('error', err => {
+      if (err.type === 'unavailable-id') fatal('Esta sala já está aberta em outra aba ou aparelho. Feche a outra ou crie uma nova sala.');
+      else fatal('Erro de conexão: ' + err.type);
+    });
+    peer.on('open', () => {
+      $('host').classList.remove('hidden');
+      const link = location.href.split('#')[0] + '#' + roomId;
+      $('shareLink').textContent = link;
+      $('status').innerHTML = '<span class="dot"></span>Sala ativa';
+      $('copyLink').onclick = () => {
+        navigator.clipboard.writeText(link);
+        $('copyLink').textContent = 'Copiado!';
+        setTimeout(() => $('copyLink').textContent = 'Copiar link', 1500);
+      };
+
+      const tiles = new Map();
+      const updateCount = () => { $('count').textContent = tiles.size ? tiles.size + ' tela(s) ao vivo' : 'Nenhuma tela ainda'; };
+
+      peer.on('call', call => {
+        call.answer();
+        call.on('stream', stream => {
+          if (tiles.has(call.peer)) return;
+          const name = (call.metadata && call.metadata.name) || 'Amigo';
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.innerHTML = '<video autoplay playsinline></video><div class="bar"><span><b></b> <span class="mut info"></span></span><span><button class="sec mute">🔇</button> <button class="sec fs">Tela cheia</button></span></div>';
+          tile.querySelector('b').textContent = name;
+          const v = tile.querySelector('video');
+          v.srcObject = stream; v.muted = true; v.play().catch(() => {});
+          tile.querySelector('.mute').onclick = e => { v.muted = !v.muted; e.target.textContent = v.muted ? '🔇' : '🔊'; };
+          tile.querySelector('.fs').onclick = () => v.requestFullscreen && v.requestFullscreen();
+          $('grid').appendChild(tile);
+          const timer = setInterval(() => {
+            if (v.videoWidth) tile.querySelector('.info').textContent = v.videoWidth + '×' + v.videoHeight;
+          }, 1500);
+          tiles.set(call.peer, { tile, timer });
+          updateCount();
+        });
+        const remove = () => {
+          const t = tiles.get(call.peer);
+          if (t) { clearInterval(t.timer); t.tile.remove(); tiles.delete(call.peer); updateCount(); }
+        };
+        call.on('close', remove);
+        call.on('error', remove);
+      });
+    });
+    return;
+  }
+
+  /* ---------- CONVIDADO ---------- */
+  $('guest').classList.remove('hidden');
+  $('status').textContent = 'Sala: ' + roomId;
+  const canShare = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+  if (!canShare) { $('mobileWarn').classList.remove('hidden'); $('startShare').disabled = true; }
+  try { $('name').value = localStorage.getItem('nome') || ''; } catch {}
+
+  let peer, stream, call;
+
+  $('startShare').onclick = async () => {
+    const name = $('name').value.trim() || 'Amigo';
+    try { localStorage.setItem('nome', name); } catch {}
+    const [h, fps] = $('quality').value.split(',').map(Number);
+    const w = Math.round(h * 16 / 9);
+    try {
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { width: { ideal: w }, height: { ideal: h }, frameRate: { ideal: fps } },
+        audio: true
+      });
+    } catch (e) { $('guestMsg').textContent = 'Compartilhamento cancelado.'; return; }
+
+    const vt = stream.getVideoTracks()[0];
+    try { vt.contentHint = $('mode').value; } catch {}
+
+    $('guestMsg').textContent = 'Conectando…';
+    $('startShare').classList.add('hidden');
+    $('stopShare').classList.remove('hidden');
+
+    peer = new Peer(peerOpts);
+    peer.on('error', e => {
+      $('guestMsg').textContent = e.type === 'peer-unavailable'
+        ? 'Sala não encontrada. O anfitrião precisa estar com a sala aberta.'
+        : 'Erro: ' + e.type;
+    });
+    peer.on('open', () => {
+      call = peer.call(roomId, stream, {
+        metadata: { name },
+        sdpTransform: sdp => sdp.replace(/(m=video[^\r\n]*\r\n)/, '$1b=AS:' + Math.round(MAX_BITRATE[h] / 1000) + '\r\n')
+      });
+      call.on('close', stop);
+      const pc = call.peerConnection;
+      pc.addEventListener('connectionstatechange', async () => {
+        if (pc.connectionState === 'connected') {
+          $('guestMsg').textContent = '✅ Compartilhando para a sala.';
+          for (const s of pc.getSenders()) {
+            if (s.track && s.track.kind === 'video') {
+              const p = s.getParameters();
+              if (!p.encodings || !p.encodings.length) p.encodings = [{}];
+              p.encodings[0].maxBitrate = MAX_BITRATE[h];
+              p.encodings[0].maxFramerate = fps;
+              p.degradationPreference = $('mode').value === 'detail' ? 'maintain-resolution' : 'maintain-framerate';
+              try { await s.setParameters(p); } catch {}
+            }
+          }
+        } else if (pc.connectionState === 'failed') {
+          $('guestMsg').textContent = 'A conexão falhou (rede restrita?). Pode ser necessário um servidor TURN.';
+        }
+      });
+    });
+    vt.onended = stop;
+  };
+
+  function stop() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (call) call.close();
+    if (peer) peer.destroy();
+    stream = call = peer = null;
+    $('startShare').classList.remove('hidden');
+    $('stopShare').classList.add('hidden');
+    if (!$('guestMsg').textContent.startsWith('Sala não') && !$('guestMsg').textContent.startsWith('A conexão')) {
+      $('guestMsg').textContent = 'Compartilhamento encerrado.';
+    }
+  }
+  $('stopShare').onclick = stop;
+})();
+</script>
+</body>
+</html>
