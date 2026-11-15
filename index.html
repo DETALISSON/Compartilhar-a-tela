@@ -145,9 +145,8 @@
         <div>
           <div class="big">🖥️</div>
           <h3 id="emptyTitle">Ninguém está compartilhando ainda</h3>
-          <div id="emptySub">Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.</div>
-          <div class="invite"><span id="inviteLink"></span><button class="sec" id="copyLink2">📋 Copiar link</button></div>
-        </div>
+          <div id="emptySub">Quando alguém compartilhar a tela, ela aparece aqui.</div>
+                  </div>
       </div>
       <div class="grid" id="grid"></div>
     </main>
@@ -193,7 +192,7 @@
         <option value="video/vp8">VP8 (usa mais CPU)</option>
       </select>
     </div>
-    <div class="field"><label for="cursor">Seta do mouse na transmissão</label>
+    <div class="field"><label for="cursor">Seta do mouse na transmissão (o Chrome/Brave nem sempre respeita)</label>
       <select id="cursor">
         <option value="never" selected>Esconder</option>
         <option value="motion">Mostrar só ao mover</option>
@@ -346,9 +345,8 @@
       $('app').classList.remove('hidden');
       const inviteUrl = location.href.split('#')[0] + '#' + roomId;
       $('codeText').textContent = roomId;
-      $('inviteLink').textContent = inviteUrl;
       const copy = (txt, msg) => { try { navigator.clipboard.writeText(txt); } catch {} toast(msg); };
-      $('copyLink2').onclick = () => copy(inviteUrl, 'Link da sala copiado!');
+      $('copyLink').onclick = () => copy(inviteUrl, 'Link da sala copiado!');
       $('copyCode').onclick = () => copy(roomId, 'Código da sala copiado!');
       $('copyLink').onclick = () => {
         navigator.clipboard.writeText(location.href.split('#')[0] + '#' + roomId);
@@ -517,7 +515,7 @@
       $('emptySub').textContent = 'Os outros já estão vendo a sua tela. A prévia está desligada para poupar a GPU.';
     } else {
       $('emptyTitle').textContent = 'Ninguém está compartilhando ainda';
-      $('emptySub').innerHTML = 'Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.';
+      $('emptySub').textContent = 'Quando alguém compartilhar a tela, ela aparece aqui.';
     }
   }
 
