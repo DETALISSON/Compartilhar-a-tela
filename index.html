@@ -30,6 +30,10 @@
   .center button { width:100%; padding:12px; }
   .brand { text-align:center; font-size:15px; letter-spacing:.3px; margin:0 0 18px; color:var(--mut); }
   .err { color:#ff8a8a; }
+  .or { text-align:center; color:var(--mut); font-size:13px; margin:18px 0 12px; }
+  #codeInput { text-transform:uppercase; letter-spacing:4px; text-align:center; font-weight:700; }
+  .invite { display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+  .invite span { background:var(--panel2); border:1px dashed var(--line); border-radius:8px; padding:8px 12px; font-size:13px; word-break:break-all; color:var(--txt); }
 
   /* App */
   .app { display:flex; flex-direction:column; height:100vh; }
@@ -107,15 +111,18 @@
 
 <section id="home" class="center hidden">
   <div class="brand">🖥️ SALA DE TELAS</div>
-  <h2>Criar sala</h2>
+  <h2>Compartilhe telas com os amigos</h2>
   <p class="mut">Todos na sala podem compartilhar a tela e ver as telas dos outros. Como o Discord, só que sem voz.</p>
-  <button id="createRoom">Criar sala</button>
+  <button id="createRoom">➕ Criar sala</button>
+  <div class="or">ou entre numa sala que já existe</div>
+  <input id="codeInput" placeholder="CÓDIGO DA SALA" maxlength="10" autocomplete="off" spellcheck="false">
+  <button class="sec" id="enterRoom">Entrar numa sala</button>
 </section>
 
 <section id="join" class="center hidden">
   <div class="brand">🖥️ SALA DE TELAS</div>
   <h2 id="joinTitle">Entrar na sala</h2>
-  <p class="mut">Escolha um nome para os outros te identificarem.</p>
+  <p class="mut" id="joinInfo">Escolha um nome para os outros te identificarem.</p>
   <input id="name" placeholder="Seu nome" maxlength="24" autocomplete="off">
   <button id="joinBtn">Entrar</button>
 </section>
@@ -124,6 +131,7 @@
   <header class="top">
     <span class="logo">🖥️ Sala de Telas</span>
     <span class="pill"><span class="dot"></span><span id="statusText">Conectado</span> · <span id="count">1 na call</span></span>
+    <button class="sec" id="copyCode" title="Copiar código da sala">🔑 <span id="codeText"></span></button>
     <span class="spacer"></span>
     <button class="sec" id="togglePeople">👥</button>
     <button class="sec" id="copyLink">🔗 Convidar</button>
@@ -136,8 +144,9 @@
       <div class="empty" id="empty">
         <div>
           <div class="big">🖥️</div>
-          <h3>Ninguém está compartilhando ainda</h3>
-          <div>Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.</div>
+          <h3 id="emptyTitle">Ninguém está compartilhando ainda</h3>
+          <div id="emptySub">Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.</div>
+          <div class="invite"><span id="inviteLink"></span><button class="sec" id="copyLink2">📋 Copiar link</button></div>
         </div>
       </div>
       <div class="grid" id="grid"></div>
@@ -164,8 +173,8 @@
       <select id="quality">
         <option value="720,30">720p · 30 fps (leve)</option>
         <option value="720,60">720p · 60 fps</option>
-        <option value="1080,30">1080p · 30 fps</option>
-        <option value="1080,60" selected>1080p · 60 fps</option>
+        <option value="1080,30" selected>1080p · 30 fps</option>
+        <option value="1080,60">1080p · 60 fps</option>
         <option value="1440,60">1440p · 60 fps</option>
         <option value="2160,30">4K · 30 fps</option>
       </select>
@@ -184,6 +193,14 @@
         <option value="video/vp8">VP8 (usa mais CPU)</option>
       </select>
     </div>
+    <div class="field"><label for="cursor">Seta do mouse na transmissão</label>
+      <select id="cursor">
+        <option value="never" selected>Esconder</option>
+        <option value="motion">Mostrar só ao mover</option>
+        <option value="always">Sempre mostrar</option>
+      </select>
+    </div>
+    <label class="chk"><input type="checkbox" id="preview"> Mostrar minha própria prévia (gasta mais GPU)</label>
     <div class="field"><label for="upload">Meu upload (Mbps), dividido entre quem assiste</label>
       <input type="number" id="upload" value="15" min="2" max="1000">
     </div>
@@ -206,7 +223,8 @@
         <li>Áudio de um site: compartilhe a aba e marque "compartilhar áudio da aba". Só o som dela vai.</li>
         <li>Áudio de um jogo: use um cabo virtual (VB-Cable). No Mixer de volume do Windows, mande o jogo para "CABLE Input" e o Discord para os fones. Aqui, escolha "Dispositivo de áudio" e "CABLE Output".</li>
         <li>Use Chrome, Edge ou Brave com a aceleração de hardware ligada e codec H.264.</li>
-        <li>Se pesar, use 720p ou 1080p a 30 fps. Rode o jogo em janela sem bordas.</li>
+        <li>Para gastar menos GPU: use 1080p a 30 fps, deixe a prévia desligada, limite os FPS do jogo (ex.: 60) e feche overlays (Discord, GeForce Experience, Xbox Game Bar).</li>
+        <li>Rode o jogo em janela sem bordas e compartilhe a janela do jogo, não a tela inteira.</li>
         <li>Para conferir se a GPU codifica: abra chrome://webrtc-internals (brave://webrtc-internals) e veja o encoderImplementation.</li>
       </ul>
     </details>
@@ -242,9 +260,15 @@
   if (!window.isSecureContext) { fatal('Esta página precisa ser aberta por HTTPS.'); return; }
 
   const rawHash = decodeURIComponent(location.hash.replace('#', '').trim());
-  const isHost = rawHash.startsWith('host=');
-  const roomId = isHost ? rawHash.slice(5) : rawHash;
-  const rand = () => 'sala-' + Math.random().toString(36).slice(2, 8);
+  const isHost = rawHash.toLowerCase().startsWith('host=');
+  const normalize = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const roomId = normalize(isHost ? rawHash.slice(5) : rawHash);   // código da sala (10 caracteres)
+  const peerIdOf = code => 'saladetelas-' + code;
+  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';           // sem 0/O/1/I para não confundir
+  const newCode = () => {
+    const a = new Uint32Array(10); crypto.getRandomValues(a);
+    return [...a].map(n => ALPHABET[n % ALPHABET.length]).join('');
+  };
   const MAX_BITRATE = { 720: 6e6, 1080: 12e6, 1440: 20e6, 2160: 40e6 };
 
   // Se algum amigo não conectar (rede restrita), preencha um servidor TURN aqui. Exemplo:
@@ -265,14 +289,25 @@
   $('settings').onclick = e => { if (e.target === $('settings')) closeSettings(); };
   $('togglePeople').onclick = () => { const s = $('side'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; };
 
-  if (!roomId) {
+  if (roomId.length !== 10) {
     $('home').classList.remove('hidden');
-    $('createRoom').onclick = () => { location.hash = 'host=' + rand(); location.reload(); };
+    if (rawHash) toast('Código de sala inválido. Ele tem 10 letras ou números.', true);
+    $('createRoom').onclick = () => { location.hash = 'host=' + newCode(); location.reload(); };
+    const codeIn = $('codeInput');
+    codeIn.oninput = () => { codeIn.value = normalize(codeIn.value).slice(0, 10); };
+    const enterRoom = () => {
+      const c = normalize(codeIn.value);
+      if (c.length !== 10) { toast('O código da sala tem 10 letras ou números.', true); return; }
+      location.hash = c; location.reload();
+    };
+    $('enterRoom').onclick = enterRoom;
+    codeIn.onkeydown = e => { if (e.key === 'Enter') enterRoom(); };
     return;
   }
 
   $('join').classList.remove('hidden');
-  $('joinTitle').textContent = isHost ? 'Criar sala' : 'Entrar na sala';
+  $('joinTitle').textContent = isHost ? 'Sala criada!' : 'Entrar na sala';
+  $('joinInfo').innerHTML = (isHost ? 'Código da sala: ' : 'Você vai entrar na sala ') + '<b>' + roomId + '</b>. Escolha um nome para os outros te identificarem.';
   try { $('name').value = localStorage.getItem('nome') || ''; } catch {}
   const go = () => {
     const name = $('name').value.trim() || 'Amigo';
@@ -296,7 +331,7 @@
   /* ---------- Entrada ---------- */
   function enter(name) {
     me.name = name;
-    peer = isHost ? new Peer(roomId, peerOpts) : new Peer(peerOpts);
+    peer = isHost ? new Peer(peerIdOf(roomId), peerOpts) : new Peer(peerOpts);
 
     peer.on('error', e => {
       if (e.type === 'unavailable-id') fatal('Esta sala já está aberta em outra aba ou aparelho. Feche a outra ou crie uma nova sala.');
@@ -309,6 +344,12 @@
     peer.on('open', id => {
       me.id = id;
       $('app').classList.remove('hidden');
+      const inviteUrl = location.href.split('#')[0] + '#' + roomId;
+      $('codeText').textContent = roomId;
+      $('inviteLink').textContent = inviteUrl;
+      const copy = (txt, msg) => { try { navigator.clipboard.writeText(txt); } catch {} toast(msg); };
+      $('copyLink2').onclick = () => copy(inviteUrl, 'Link da sala copiado!');
+      $('copyCode').onclick = () => copy(roomId, 'Código da sala copiado!');
       $('copyLink').onclick = () => {
         navigator.clipboard.writeText(location.href.split('#')[0] + '#' + roomId);
         toast('Link da sala copiado!');
@@ -363,7 +404,7 @@
   }
 
   function joinHub() {
-    hubConn = peer.connect(roomId, { metadata: { name: me.name }, reliable: true });
+    hubConn = peer.connect(peerIdOf(roomId), { metadata: { name: me.name }, reliable: true });
     const timeout = setTimeout(() => { if (!inRoom) fatal('Não consegui entrar na sala. Veja se o criador está com ela aberta.'); }, 12000);
     hubConn.on('open', () => { clearTimeout(timeout); inRoom = true; lastHub = Date.now(); });
     hubConn.on('data', m => {
@@ -468,7 +509,17 @@
     tiles.delete(key);
     refreshEmpty(); renderPeople();
   }
-  function refreshEmpty() { $('empty').classList.toggle('hidden', tiles.size > 0); }
+  function refreshEmpty() {
+    $('empty').classList.toggle('hidden', tiles.size > 0);
+    if (tiles.size > 0) return;
+    if (stream) {
+      $('emptyTitle').textContent = 'Você está compartilhando';
+      $('emptySub').textContent = 'Os outros já estão vendo a sua tela. A prévia está desligada para poupar a GPU.';
+    } else {
+      $('emptyTitle').textContent = 'Ninguém está compartilhando ainda';
+      $('emptySub').innerHTML = 'Clique em <b>Compartilhar tela</b> abaixo, ou convide amigos pelo botão <b>Convidar</b>.';
+    }
+  }
 
   /* ---------- Enviar minha tela ---------- */
   function preferCodec(pc, mime) {
@@ -483,14 +534,14 @@
     } catch {}
   }
 
-  const LOCKED = ['quality', 'mode', 'audio', 'codec', 'audioSrc', 'audioDev'];
+  const LOCKED = ['quality', 'mode', 'audio', 'codec', 'audioSrc', 'audioDev', 'cursor', 'preview'];
 
   $('startShare').onclick = async () => {
     const [h, fps] = $('quality').value.split(',').map(Number);
     curH = h; curFps = fps;
     try {
       stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: { ideal: Math.round(h * 16 / 9) }, height: { ideal: h }, frameRate: { ideal: fps } },
+        video: { width: { ideal: Math.round(h * 16 / 9) }, height: { ideal: h }, frameRate: { ideal: fps }, cursor: $('cursor').value },
         audio: ($('audio').checked && $('audioSrc').value === 'display') ? {
           echoCancellation: false, noiseSuppression: false, autoGainControl: false,
           suppressLocalAudioPlayback: true
@@ -516,7 +567,8 @@
     $('startShare').classList.add('hidden');
     $('stopShare').classList.remove('hidden');
     LOCKED.forEach(i => $(i).disabled = true);
-    addTile('local', me.name + ' (prévia)', stream, null, true);
+    if ($('preview').checked) addTile('local', me.name + ' (prévia)', stream, null, true);
+    refreshEmpty();
     participants.forEach((n, id) => callPeer(id));
     renderPeople();
   };
@@ -596,6 +648,7 @@
     outCalls.clear();
     stream = null;
     removeTile('local');
+    refreshEmpty();
     $('startShare').classList.remove('hidden');
     $('stopShare').classList.add('hidden');
     LOCKED.forEach(i => $(i).disabled = false);
