@@ -402,7 +402,8 @@
   }
 
   function joinHub() {
-    hubConn = peer.connect(peerIdOf(roomId), { metadata: { name: me.name }, reliable: true });
+    // serialization 'json': formato simples que o app Android também entende
+    hubConn = peer.connect(peerIdOf(roomId), { metadata: { name: me.name }, reliable: true, serialization: 'json' });
     const timeout = setTimeout(() => { if (!inRoom) fatal('Não consegui entrar na sala. Veja se o criador está com ela aberta.'); }, 12000);
     hubConn.on('open', () => { clearTimeout(timeout); inRoom = true; lastHub = Date.now(); });
     hubConn.on('data', m => {
