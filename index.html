@@ -81,9 +81,6 @@
   .field select, .field input[type=number] { width:100%; }
   .chk { display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:14px; }
   .chk input { width:auto; }
-  details { margin:6px 0 14px; font-size:13px; color:var(--mut); }
-  details li { margin:6px 0; line-height:1.45; }
-  summary { cursor:pointer; }
 
   /* Avisos */
   #toasts { position:fixed; top:16px; right:16px; display:grid; gap:8px; z-index:30; max-width:min(360px,calc(100vw - 32px)); }
@@ -312,9 +309,9 @@
   /* ---------- Estado ---------- */
   let peer, hubConn, inRoom = false, lastHub = Date.now(), promoting = false;
   const me = { id: null, name: '' };
-  const participants = new Map();   // id -> nome
-  const hubConns = new Map();       // id -> conn (quando sou host)
-  const peerConns = new Map();      // id -> conn direta para avisos instantâneos (stop_share, etc.)
+  const participants = new Map();
+  const hubConns = new Map();
+  const peerConns = new Map();
   const outCalls = new Map();
   const tiles = new Map();
   const warned = new Set();
@@ -328,7 +325,6 @@
     peer.on('error', e => {
       if (e.type === 'unavailable-id') {
         if (promoting) {
-          // Outro participante assumiu o cargo de host antes de mim: reconecta ao novo host!
           promoting = false;
           isHost = false;
           setTimeout(joinHub, 800);
@@ -345,7 +341,6 @@
     peer.on('disconnected', () => { try { peer.reconnect(); } catch {} });
     peer.on('call', onIncomingCall);
 
-    // Recebe conexões de dados (tanto como Host quanto como Par direto para avisos instantâneos)
     peer.on('connection', conn => {
       if (isHost) {
         handleHostIncomingConn(conn);
@@ -381,7 +376,6 @@
       if (!isHost) { clearInterval(hostTimer); return; }
       const now = Date.now();
       hubConns.forEach((c, id) => {
-        // Tolerância de 25s para suportar celulares minimizados sem derrubar
         if (now - (c.lastSeen || now) > 25000) {
           try { c.close(); } catch {}
           hubDrop(id);
@@ -441,7 +435,6 @@
       lastHub = Date.now();
       if (!m) return;
       if (m.t === 'peers') {
-        // Sincroniza lista completa e remove quem não está mais
         const validIds = new Set(m.list.map(p => p.id));
         [...participants.keys()].forEach(id => { if (!validIds.has(id)) removeParticipant(id, false); });
         m.list.forEach(p => addParticipant(p.id, p.name, false));
@@ -458,22 +451,18 @@
     hubConn.on('error', promoteToHost);
   }
 
-  // Heartbeat do cliente para o host
   setInterval(() => {
     if (!inRoom || isHost || promoting) return;
     try { if (hubConn && hubConn.open) hubConn.send({ t: 'hb' }); } catch {}
     if (Date.now() - lastHub > 25000) promoteToHost();
   }, 4000);
 
-  /** Quando o líder sai, um dos participantes assume automaticamente o ID da sala para mantê-la ativa! */
   function promoteToHost() {
     if (!inRoom || isHost || promoting) return;
     promoting = true;
     banner('O anfitrião saiu. Transferindo controle da sala…');
-    // Remove o antigo host da lista
     removeParticipant(peerIdOf(roomId), false);
 
-    // Pequeno atraso aleatório para evitar colisão se houver 2+ pessoas
     setTimeout(() => {
       try { if (peer) peer.destroy(); } catch {}
       isHost = true;
@@ -481,7 +470,6 @@
 
       peer.on('error', e => {
         if (e.type === 'unavailable-id') {
-          // Outro participante assumiu primeiro! Voltamos como cliente
           promoting = false;
           isHost = false;
           try { peer.destroy(); } catch {}
@@ -573,7 +561,6 @@
     call.answer();
     call.on('stream', s => {
       addTile(call.peer, (call.metadata && call.metadata.name) || participants.get(call.peer) || 'Amigo', s, call);
-      // Detecta quando a trilha de vídeo é mutada/encerrada remotamente
       const vTrack = s.getVideoTracks()[0];
       if (vTrack) {
         vTrack.onended = () => removeTile(call.peer, call);
@@ -690,10 +677,7 @@
     const cap = MAX_BITRATE[curH];
     const call = peer.call(id, stream, {
       metadata: { name: me.name },
-      sdpTransform: sdp => sdp.replace(/(m=video[^
-]*
-)/, '$1b=AS:' + Math.round(cap / 1000) + '
-')
+      sdpTransform: sdp => sdp.replace(/(m=video[^\r\n]*\r\n)/, '$1b=AS:' + Math.round(cap / 1000) + '\r\n')
     });
     if (!call) return;
     if (call.peerConnection) preferCodec(call.peerConnection, $('codec').value);
