@@ -6,138 +6,517 @@
 <title>Sala de Telas</title>
 <style>
   :root {
-    --bg:#0b0d12; --panel:#141821; --panel2:#1b2030; --line:#262c3b; --txt:#eceff6; --mut:#8c95a9;
-    --acc:#6c8cff; --acc2:#8a6cff; --ok:#3ddc84; --red:#ef4f5f;
+    --bg: #080a0f;
+    --surface: #111520;
+    --surface-2: #181e2e;
+    --surface-3: #222a40;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-focus: #6366f1;
+    --txt: #f1f5f9;
+    --mut: #94a3b8;
+    --acc: #6366f1;
+    --acc-hover: #4f46e5;
+    --acc-glow: rgba(99, 102, 241, 0.35);
+    --ok: #10b981;
+    --red: #ef4444;
+    --red-hover: #dc2626;
   }
-  * { box-sizing:border-box; }
-  html,body { height:100%; }
-  body { margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif; background:radial-gradient(1200px 600px at 20% -10%, #1a2140 0%, var(--bg) 55%); color:var(--txt); }
-  button, select, input { font:inherit; color:var(--txt); }
-  input, select { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; outline:none; }
-  input:focus, select:focus { border-color:var(--acc); }
-  button { cursor:pointer; border:none; border-radius:10px; padding:10px 16px; font-weight:600; background:linear-gradient(135deg,var(--acc),var(--acc2)); }
-  button.sec { background:var(--panel2); border:1px solid var(--line); }
-  button.danger { background:var(--red); }
-  button:disabled { opacity:.45; cursor:not-allowed; }
-  .hidden { display:none !important; }
-  .mut { color:var(--mut); }
-
-  /* Telas iniciais */
-  .center { max-width:460px; margin:10vh auto 0; padding:24px; background:var(--panel); border:1px solid var(--line); border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.4); width:calc(100% - 32px); }
-  .center h2 { margin:0 0 8px; font-size:22px; }
-  .center p { margin:0 0 18px; line-height:1.5; }
-  .center input { width:100%; margin-bottom:12px; }
-  .center button { width:100%; padding:12px; }
-  .brand { text-align:center; font-size:15px; letter-spacing:.3px; margin:0 0 18px; color:var(--mut); }
-  .err { color:#ff8a8a; }
-  .or { text-align:center; color:var(--mut); font-size:13px; margin:18px 0 12px; }
-  #codeInput { text-transform:uppercase; letter-spacing:4px; text-align:center; font-weight:700; }
-
-  /* App */
-  .app { display:flex; flex-direction:column; height:100vh; height:100dvh; }
-  .top { display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line); background:rgba(11,13,18,.85); backdrop-filter:blur(8px); flex-wrap:wrap; }
-  .logo { font-weight:800; font-size:16px; white-space:nowrap; }
-  .pill { display:inline-flex; align-items:center; gap:6px; background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:4px 10px; font-size:12px; white-space:nowrap; }
-  .dot { width:8px; height:8px; border-radius:50%; background:var(--ok); box-shadow:0 0 8px var(--ok); }
-  .spacer { flex:1; }
-  .body { flex:1; display:flex; min-height:0; position:relative; }
-  .stage { flex:1; overflow:auto; padding:14px 14px 100px; }
-  .side { width:250px; border-left:1px solid var(--line); padding:16px; overflow:auto; background:rgba(20,24,33,.95); }
-  .side h3 { margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--mut); }
-  .person { display:flex; align-items:center; gap:10px; padding:8px 6px; border-radius:10px; }
-  .person:hover { background:var(--panel2); }
-  .avatar { width:32px; height:32px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:14px; flex:none; }
-  .pname { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14px; }
-  .live { background:var(--red); font-size:10px; font-weight:800; letter-spacing:.5px; padding:2px 6px; border-radius:6px; }
-
-  .banner { margin:0 0 14px; padding:10px 14px; border-radius:10px; background:#3a2f12; border:1px solid #6b5518; color:#ffd98a; font-size:13px; }
-
-  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(480px,100%),1fr)); gap:14px; }
-  .grid:has(.tile:only-child) { grid-template-columns:1fr; }
-  .tile { position:relative; background:#000; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-  .tile.big { grid-column:1 / -1; }
-  .tile video { width:100%; display:block; aspect-ratio:16/9; max-height:calc(100vh - 190px); object-fit:contain; background:#000; }
-  .tag { position:absolute; left:10px; bottom:10px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,.65); border-radius:8px; padding:4px 10px; font-size:13px; backdrop-filter:blur(4px); }
-  .tag .info { color:var(--mut); font-size:12px; }
-  .ctl { position:absolute; top:10px; right:10px; display:flex; gap:6px; opacity:0; transition:opacity .15s; }
-  .tile:hover .ctl { opacity:1; }
-  @media (hover:none) { .ctl { opacity:1; } }
-  .ctl button { padding:8px 12px; background:rgba(0,0,0,.7); border:1px solid rgba(255,255,255,.15); font-size:14px; }
-
-  .empty { display:grid; place-items:center; min-height:45vh; text-align:center; color:var(--mut); padding:16px; }
-  .empty .big { font-size:48px; margin-bottom:8px; }
-  .empty h3 { color:var(--txt); margin:0 0 6px; }
-
-  /* Barra inferior */
-  .dock { position:fixed; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:8px; align-items:center; padding:8px 10px; background:rgba(27,32,48,.95); backdrop-filter:blur(10px); border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.5); z-index:5; max-width:calc(100vw - 24px); }
-  .dock button { padding:11px 16px; white-space:nowrap; font-size:14px; }
-
-  /* Configurações */
-  .modal { position:fixed; inset:0; background:rgba(0,0,0,.65); display:grid; place-items:center; z-index:20; padding:12px; }
-  .sheet { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px; width:min(560px,100%); max-height:90vh; overflow:auto; }
-  .sheet h3 { margin:0 0 14px; }
-  .field { display:grid; gap:6px; margin-bottom:14px; }
-  .field label { font-size:13px; color:var(--mut); }
-  .field select, .field input[type=number] { width:100%; }
-  .chk { display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:14px; }
-  .chk input { width:auto; }
-
-  /* Avisos */
-  #toasts { position:fixed; top:16px; right:16px; display:grid; gap:8px; z-index:30; max-width:min(360px,calc(100vw - 32px)); }
-  .toast { background:var(--panel2); border:1px solid var(--line); border-left:4px solid var(--acc); border-radius:10px; padding:10px 14px; font-size:14px; box-shadow:0 8px 24px rgba(0,0,0,.4); animation:in .2s ease; }
-  .toast.warn { border-left-color:#ffb020; }
-  @keyframes in { from { opacity:0; transform:translateY(-6px); } }
-
-  /* Responsividade Mobile */
-  @media (max-width:768px) {
-    .top { padding:8px 10px; gap:6px; }
-    .top button { padding:7px 10px; font-size:13px; }
-    .logo { font-size:15px; }
-    .side { display:none; position:fixed; right:0; top:52px; bottom:0; width:240px; z-index:15; box-shadow:-10px 0 30px rgba(0,0,0,.7); }
-    .side.open { display:block; }
-    #togglePeople { display:inline-flex !important; }
-    .tile video { max-height:calc(100dvh - 160px); }
-    .dock { width:calc(100vw - 24px); justify-content:center; }
-    .dock button#startShare, .dock button#stopShare { flex:1; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(99, 102, 241, 0.18), transparent 60%),
+      radial-gradient(800px 500px at 85% 110%, rgba(139, 92, 246, 0.14), transparent 60%),
+      var(--bg);
+    color: var(--txt);
+    -webkit-font-smoothing: antialiased;
   }
-  #togglePeople { display:none; }
+
+  button, select, input { font: inherit; color: var(--txt); }
+  input, select {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  input:focus, select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    background: rgba(15, 23, 42, 0.95);
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    box-shadow: 0 6px 20px -4px var(--acc-glow);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+  }
+  button:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button.sec {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+  button.sec:hover:not(:disabled) { background: var(--surface-3); }
+  button.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 6px 20px -4px rgba(239, 68, 68, 0.4);
+  }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .hidden { display: none !important; }
+  .mut { color: var(--mut); }
+
+  /* Card Central (Perfil + Sala) */
+  .auth-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(17, 21, 32, 0.86);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px 28px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+  }
+  .brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.14);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .card h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
+  .card p.sub { margin: 0 0 24px; font-size: 14px; color: var(--mut); line-height: 1.5; }
+
+  /* Seletor de Foto de Perfil */
+  .avatar-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .avatar-ring {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    padding: 3px;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    cursor: pointer;
+    box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.45);
+    transition: transform .2s ease;
+  }
+  .avatar-ring:hover { transform: scale(1.04); }
+  .avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #131826;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 32px;
+    font-weight: 800;
+    color: #c7d2fe;
+  }
+  .avatar-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .cam-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #1e2436;
+    border: 2px solid #0b0d12;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+  }
+  .avatar-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn-xs {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .btn-ghost-danger {
+    background: transparent;
+    color: #f87171;
+    box-shadow: none;
+  }
+  .btn-ghost-danger:hover { background: rgba(239, 68, 68, 0.12); }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field-group label { font-size: 12px; font-weight: 600; color: #cbd5e1; letter-spacing: .02em; }
+  .field-group input { width: 100%; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0;
+    color: var(--mut);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .join-row { display: flex; gap: 8px; }
+  .join-row input {
+    flex: 1;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+    font-weight: 700;
+  }
+  .full-btn { width: 100%; padding: 13px; font-size: 15px; }
+  .err { color: #fca5a5; }
+
+  /* App Principal (Dentro da Sala) */
+  .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(11, 13, 18, 0.82);
+    backdrop-filter: blur(12px);
+    flex-wrap: wrap;
+    z-index: 10;
+  }
+  .logo { font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .spacer { flex: 1; }
+
+  .me-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 12px 4px 4px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .me-chip-av {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .me-chip-av img { width: 100%; height: 100%; object-fit: cover; }
+
+  .body { flex: 1; display: flex; min-height: 0; position: relative; }
+  .stage { flex: 1; overflow: auto; padding: 18px 18px 105px; }
+  .side {
+    width: 270px;
+    border-left: 1px solid var(--border);
+    padding: 18px;
+    overflow: auto;
+    background: rgba(17, 21, 32, 0.72);
+    backdrop-filter: blur(10px);
+  }
+  .side h3 {
+    margin: 0 0 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--mut);
+  }
+  .person {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    margin-bottom: 4px;
+    transition: background .15s;
+  }
+  .person:hover { background: var(--surface-2); }
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex: none;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .pname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 500; }
+  .live {
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    padding: 3px 7px;
+    border-radius: 6px;
+  }
+
+  .banner {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #fcd34d;
+    font-size: 13px;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 16px; }
+  .grid:has(.tile:only-child) { grid-template-columns: 1fr; }
+  .tile {
+    position: relative;
+    background: #05070a;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  }
+  .tile.big { grid-column: 1 / -1; }
+  .tile video { width: 100%; display: block; aspect-ratio: 16/9; max-height: calc(100vh - 190px); object-fit: contain; background: #000; }
+  .tag {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(11, 13, 18, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-size: 13px;
+    backdrop-filter: blur(8px);
+  }
+  .tag-av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .tag-av img { width: 100%; height: 100%; object-fit: cover; }
+  .tag .info { color: var(--mut); font-size: 12px; }
+  .ctl { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; opacity: 0; transition: opacity .15s; }
+  .tile:hover .ctl { opacity: 1; }
+  @media (hover: none) { .ctl { opacity: 1; } }
+  .ctl button { padding: 8px 12px; background: rgba(11, 13, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); font-size: 14px; box-shadow: none; }
+
+  .empty { display: grid; place-items: center; min-height: 52vh; text-align: center; color: var(--mut); padding: 20px; }
+  .empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    display: grid;
+    place-items: center;
+    font-size: 32px;
+    margin: 0 auto 14px;
+  }
+  .empty h3 { color: var(--txt); margin: 0 0 6px; font-size: 18px; }
+
+  /* Dock Inferior Flutuante */
+  .dock {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(24, 30, 46, 0.9);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    z-index: 5;
+    max-width: calc(100vw - 24px);
+  }
+  .dock button { padding: 11px 18px; white-space: nowrap; font-size: 14px; }
+
+  /* Modal de Ajustes */
+  .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 20; padding: 16px; }
+  .sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 24px;
+    width: min(520px, 100%);
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+  }
+  .sheet h3 { margin: 0 0 18px; font-size: 18px; }
+  .field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 13px; color: var(--mut); }
+  .field select, .field input[type=number] { width: 100%; }
+  .chk { display: flex; align-items: center; gap: 10px; font-size: 14px; margin-bottom: 14px; cursor: pointer; }
+  .chk input { width: 16px; height: 16px; accent-color: var(--acc); }
+
+  /* Toasts */
+  #toasts { position: fixed; top: 18px; right: 18px; display: grid; gap: 8px; z-index: 30; max-width: min(360px, calc(100vw - 32px)); }
+  .toast {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--acc);
+    border-radius: 12px;
+    padding: 11px 15px;
+    font-size: 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    animation: in .2s ease;
+  }
+  .toast.warn { border-left-color: #f59e0b; }
+  @keyframes in { from { opacity: 0; transform: translateY(-6px); } }
+
+  @media (max-width: 768px) {
+    .top { padding: 10px 12px; gap: 6px; }
+    .side { display: none; position: fixed; right: 0; top: 56px; bottom: 0; width: 250px; z-index: 15; }
+    .side.open { display: block; }
+    #togglePeople { display: inline-flex !important; }
+    .dock { width: calc(100vw - 24px); justify-content: center; }
+    .dock button#startShare, .dock button#stopShare { flex: 1; }
+  }
+  #togglePeople { display: none; }
 </style>
 </head>
 <body>
 
 <div id="toasts"></div>
 
-<section id="fatal" class="center hidden">
-  <h2 class="err">Não foi possível continuar</h2>
-  <p class="mut" id="fatalMsg"></p>
-</section>
+<!-- Tela de Erro Fatal -->
+<div id="fatal" class="auth-wrap hidden">
+  <div class="card">
+    <h1 class="err">Não foi possível continuar</h1>
+    <p class="sub" id="fatalMsg"></p>
+    <button class="full-btn" onclick="location.hash='';location.reload()">Voltar ao início</button>
+  </div>
+</div>
 
-<section id="home" class="center hidden">
-  <div class="brand">🖥️ SALA DE TELAS</div>
-  <h2>Compartilhe telas com os amigos</h2>
-  <p class="mut">Todos na sala podem compartilhar a tela e ver as telas dos outros.</p>
-  <button id="createRoom">➕ Criar sala</button>
-  <div class="or">ou entre numa sala que já existe</div>
-  <input id="codeInput" placeholder="CÓDIGO DA SALA" maxlength="10" autocomplete="off" spellcheck="false">
-  <button class="sec" id="enterRoom">Entrar numa sala</button>
-</section>
+<!-- Tela Inicial Unificada: Foto + Nome + Criar ou Entrar na Sala -->
+<div id="lobby" class="auth-wrap hidden">
+  <div class="card">
+    <div class="brand-pill">🖥️ SALA DE TELAS</div>
+    <h1 id="lobbyTitle">Seu Perfil na Sala</h1>
+    <p class="sub" id="lobbySub">Escolha sua foto e nome para os outros participantes verem você.</p>
 
-<section id="join" class="center hidden">
-  <div class="brand">🖥️ SALA DE TELAS</div>
-  <h2 id="joinTitle">Entrar na sala</h2>
-  <p class="mut" id="joinInfo">Escolha um nome para os outros te identificarem.</p>
-  <input id="name" placeholder="Seu nome" maxlength="24" autocomplete="off">
-  <button id="joinBtn">Entrar</button>
-</section>
+    <!-- Upload de Foto de Perfil -->
+    <div class="avatar-picker">
+      <div class="avatar-ring" id="avatarClick" title="Clique para escolher sua foto">
+        <div class="avatar-inner" id="avatarPreview">?</div>
+        <div class="cam-badge">📷</div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" class="hidden">
+      <div class="avatar-btns">
+        <button type="button" class="sec btn-xs" id="btnPickAvatar">Escolher foto</button>
+        <button type="button" class="btn-xs btn-ghost-danger hidden" id="btnRemoveAvatar">Remover</button>
+      </div>
+    </div>
 
+    <!-- Campo Nome -->
+    <div class="field-group">
+      <label for="nameInput">Seu Nome de Exibição</label>
+      <input id="nameInput" placeholder="Ex: Alisson" maxlength="24" autocomplete="off">
+    </div>
+
+    <!-- Modo 1: Sem código na URL (Criar ou Digitar Código) -->
+    <div id="modeHome">
+      <button id="createRoom" class="full-btn">➕ Criar nova sala</button>
+      <div class="divider">ou entre com um código</div>
+      <div class="join-row">
+        <input id="codeInput" placeholder="CÓDIGO" maxlength="10" autocomplete="off" spellcheck="false">
+        <button class="sec" id="enterRoom">Entrar</button>
+      </div>
+    </div>
+
+    <!-- Modo 2: Código já veio no link (#CODIGO) -->
+    <div id="modeDirectJoin" class="hidden">
+      <button id="joinDirectBtn" class="full-btn">Entrar na sala →</button>
+      <div style="text-align:center; margin-top:12px;">
+        <button type="button" class="sec btn-xs" id="btnChangeRoom">Trocar sala</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sala Ativa -->
 <div id="app" class="app hidden">
   <header class="top">
-    <span class="logo">🖥️ Sala</span>
+    <span class="logo">🖥️ Sala de Telas</span>
     <span class="pill"><span class="dot"></span><span id="count">1</span></span>
     <button class="sec" id="copyCode" title="Copiar código">🔑 <span id="codeText"></span></button>
     <span class="spacer"></span>
+    <div class="me-chip" id="meChip">
+      <div class="me-chip-av" id="meChipAv">?</div>
+      <span id="meChipName">Você</span>
+    </div>
     <button class="sec" id="togglePeople" title="Participantes">👥</button>
-    <button class="sec" id="copyLink" title="Copiar link">🔗</button>
+    <button class="sec" id="copyLink" title="Copiar link">🔗 Link</button>
     <button class="sec" id="openSettings" title="Ajustes">⚙️</button>
   </header>
 
@@ -146,32 +525,32 @@
       <div class="banner hidden" id="banner"></div>
       <div class="empty" id="empty">
         <div>
-          <div class="big">🖥️</div>
+          <div class="empty-icon">🖥️</div>
           <h3 id="emptyTitle">Ninguém está compartilhando ainda</h3>
-          <div id="emptySub">Quando alguém compartilhar a tela, ela aparece aqui.</div>
+          <div id="emptySub">Clique em "Compartilhar tela" abaixo para transmitir para a sala.</div>
         </div>
       </div>
       <div class="grid" id="grid"></div>
     </main>
     <aside class="side" id="side">
-      <h3 id="sideTitle">Na call</h3>
+      <h3 id="sideTitle">Na call · 1</h3>
       <div id="peopleList"></div>
     </aside>
   </div>
 
   <div class="dock">
     <button id="startShare">🖥️ Compartilhar tela</button>
-    <button id="stopShare" class="danger hidden">⏹ Parar</button>
-    <button class="sec" id="openSettings2">⚙️</button>
+    <button id="stopShare" class="danger hidden">⏹ Parar transmissão</button>
+    <button class="sec" id="openSettings2" title="Ajustes">⚙️</button>
+    <button class="sec" id="leaveBtn" title="Sair da sala">🚪 Sair</button>
   </div>
 </div>
 
 <!-- Ajustes -->
 <div id="settings" class="modal hidden">
   <div class="sheet">
-    <h3>Ajustes de compartilhamento</h3>
-
-    <div class="field"><label for="quality">Qualidade</label>
+    <h3>⚙️ Ajustes de compartilhamento</h3>
+    <div class="field"><label for="quality">Qualidade de vídeo</label>
       <select id="quality">
         <option value="720,30">720p · 30 fps (leve)</option>
         <option value="720,60">720p · 60 fps</option>
@@ -206,7 +585,6 @@
     <div class="field"><label for="upload">Meu upload (Mbps), dividido entre quem assiste</label>
       <input type="number" id="upload" value="15" min="2" max="1000">
     </div>
-
     <label class="chk"><input type="checkbox" id="audio" checked> Incluir áudio</label>
     <div class="field"><label for="audioSrc">Origem do áudio</label>
       <select id="audioSrc">
@@ -217,10 +595,8 @@
     <div class="field hidden" id="audioDevField"><label for="audioDev">Dispositivo</label>
       <select id="audioDev"></select>
     </div>
-
-    <p class="mut hidden" id="mobileWarn">⚠️ Este navegador não permite compartilhar a tela. Use o app Android para compartilhar.</p>
-
-    <button id="closeSettings" style="width:100%">Fechar</button>
+    <p class="mut hidden" id="mobileWarn">⚠️ Este navegador não permite compartilhar a tela.</p>
+    <button id="closeSettings" class="full-btn">Salvar e fechar</button>
   </div>
 </div>
 
@@ -239,21 +615,92 @@
   };
   const banner = msg => { $('banner').textContent = msg; $('banner').classList.toggle('hidden', !msg); };
   const fatal = msg => {
-    ['home', 'join', 'app'].forEach(i => $(i).classList.add('hidden'));
+    ['lobby', 'app'].forEach(i => $(i).classList.add('hidden'));
     $('fatalMsg').textContent = msg;
     $('fatal').classList.remove('hidden');
   };
 
   if (typeof Peer === 'undefined') {
-    fatal('A biblioteca de conexão (PeerJS) não carregou.');
+    fatal('A biblioteca de conexão (PeerJS) não carregou. Verifique sua internet.');
     return;
   }
-  if (!window.isSecureContext) { fatal('Esta página precisa ser aberta por HTTPS.'); return; }
 
+  /* ---------- Gestão de Perfil (Foto + Nome) ---------- */
+  let myAvatar = null;
+  try {
+    $('nameInput').value = localStorage.getItem('nome') || '';
+    myAvatar = localStorage.getItem('avatar') || null;
+  } catch {}
+
+  function updateAvatarUI() {
+    const prev = $('avatarPreview');
+    const nameVal = $('nameInput').value.trim();
+    const initial = (nameVal[0] || '?').toUpperCase();
+    if (myAvatar) {
+      prev.innerHTML = `<img src="${myAvatar}" alt="Avatar">`;
+      $('btnRemoveAvatar').classList.remove('hidden');
+    } else {
+      prev.textContent = initial;
+      prev.style.background = nameVal ? `hsl(${hue(nameVal)} 55% 32%)` : '#131826';
+      $('btnRemoveAvatar').classList.add('hidden');
+    }
+  }
+  updateAvatarUI();
+  $('nameInput').addEventListener('input', updateAvatarUI);
+
+  const triggerPick = () => $('avatarInput').click();
+  $('avatarClick').onclick = triggerPick;
+  $('btnPickAvatar').onclick = triggerPick;
+  $('btnRemoveAvatar').onclick = () => {
+    myAvatar = null;
+    try { localStorage.removeItem('avatar'); } catch {}
+    updateAvatarUI();
+  };
+
+  $('avatarInput').onchange = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('Selecione uma imagem válida (PNG, JPG ou WEBP).', true);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        // Redimensiona para 160x160 WebP leve para trafegar rápido no PeerJS DataChannel
+        const canvas = document.createElement('canvas');
+        const size = 160;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const minSide = Math.min(img.width, img.height);
+        const sx = (img.width - minSide) / 2;
+        const sy = (img.height - minSide) / 2;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+        myAvatar = canvas.toDataURL('image/webp', 0.82);
+        try { localStorage.setItem('avatar', myAvatar); } catch {}
+        updateAvatarUI();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  function saveProfile() {
+    const name = $('nameInput').value.trim() || 'Amigo';
+    try {
+      localStorage.setItem('nome', name);
+      if (myAvatar) localStorage.setItem('avatar', myAvatar);
+    } catch {}
+    return name;
+  }
+
+  /* ---------- Roteamento de Sala ---------- */
   const rawHash = decodeURIComponent(location.hash.replace('#', '').trim());
   let isHost = rawHash.toLowerCase().startsWith('host=');
   const normalize = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const roomId = normalize(isHost ? rawHash.slice(5) : rawHash);
+  let roomId = normalize(isHost ? rawHash.slice(5) : rawHash);
   const peerIdOf = code => 'saladetelas-' + code;
   const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const newCode = () => {
@@ -262,11 +709,9 @@
   };
   const MAX_BITRATE = { 720: 6e6, 1080: 12e6, 1440: 20e6, 2160: 40e6 };
 
-  const TURN_SERVERS = [];
   const peerOpts = { config: { iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    ...TURN_SERVERS
+    { urls: 'stun:stun1.l.google.com:19302' }
   ]}};
 
   const openSettings = () => $('settings').classList.remove('hidden');
@@ -276,50 +721,61 @@
   $('closeSettings').onclick = closeSettings;
   $('settings').onclick = e => { if (e.target === $('settings')) closeSettings(); };
   $('togglePeople').onclick = () => $('side').classList.toggle('open');
+  $('leaveBtn').onclick = () => { location.hash = ''; location.reload(); };
 
-  if (roomId.length !== 10) {
-    $('home').classList.remove('hidden');
+  $('lobby').classList.remove('hidden');
+
+  if (roomId.length === 10) {
+    $('modeHome').classList.add('hidden');
+    $('modeDirectJoin').classList.remove('hidden');
+    $('lobbyTitle').textContent = isHost ? 'Sala Criada!' : 'Entrar na Sala ' + roomId;
+    $('lobbySub').textContent = 'Confira sua foto e nome antes de entrar.';
+    $('joinDirectBtn').onclick = () => {
+      const name = saveProfile();
+      $('lobby').classList.add('hidden');
+      enter(name);
+    };
+    $('btnChangeRoom').onclick = () => { location.hash = ''; location.reload(); };
+  } else {
     if (rawHash) toast('Código de sala inválido.', true);
-    $('createRoom').onclick = () => { location.hash = 'host=' + newCode(); location.reload(); };
+    $('createRoom').onclick = () => {
+      saveProfile();
+      location.hash = 'host=' + newCode();
+      location.reload();
+    };
     const codeIn = $('codeInput');
     codeIn.oninput = () => { codeIn.value = normalize(codeIn.value).slice(0, 10); };
     const enterRoom = () => {
       const c = normalize(codeIn.value);
       if (c.length !== 10) { toast('O código da sala tem 10 letras ou números.', true); return; }
-      location.hash = c; location.reload();
+      saveProfile();
+      location.hash = c;
+      location.reload();
     };
     $('enterRoom').onclick = enterRoom;
     codeIn.onkeydown = e => { if (e.key === 'Enter') enterRoom(); };
-    return;
   }
 
-  $('join').classList.remove('hidden');
-  $('joinTitle').textContent = isHost ? 'Sala criada!' : 'Entrar na sala';
-  $('joinInfo').innerHTML = (isHost ? 'Código da sala: ' : 'Você vai entrar na sala ') + '<b>' + roomId + '</b>. Escolha um nome:';
-  try { $('name').value = localStorage.getItem('nome') || ''; } catch {}
-  const go = () => {
-    const name = $('name').value.trim() || 'Amigo';
-    try { localStorage.setItem('nome', name); } catch {}
-    $('join').classList.add('hidden');
-    enter(name);
-  };
-  $('joinBtn').onclick = go;
-  $('name').onkeydown = e => { if (e.key === 'Enter') go(); };
-
-  /* ---------- Estado ---------- */
+  /* ---------- Estado da Sala ---------- */
   let peer, hubConn, inRoom = false, lastHub = Date.now(), promoting = false;
-  const me = { id: null, name: '' };
+  const me = { id: null, name: '', avatar: null };
+  // participants: Map<id, { name, avatar }>
   const participants = new Map();
   const hubConns = new Map();
   const peerConns = new Map();
   const outCalls = new Map();
   const tiles = new Map();
   const warned = new Set();
-  let stream = null, curH = 1080, curFps = 60;
+  let stream = null, curH = 1080, curFps = 30;
 
-  /* ---------- Entrada ---------- */
+  function renderAvatarHtml(name, avatarUrl) {
+    if (avatarUrl) return `<img src="${avatarUrl}" alt="">`;
+    return (name[0] || '?').toUpperCase();
+  }
+
   function enter(name) {
     me.name = name;
+    me.avatar = myAvatar;
     peer = isHost ? new Peer(peerIdOf(roomId), peerOpts) : new Peer(peerOpts);
 
     peer.on('error', e => {
@@ -332,7 +788,7 @@
           fatal('Esta sala já está aberta em outra aba ou aparelho.');
         }
       } else if (e.type === 'peer-unavailable' && !inRoom) {
-        fatal('Sala não encontrada. Confira o link e veja se há alguém na sala.');
+        fatal('Sala não encontrada. Confira o código e veja se há alguém na sala.');
       } else if (e.type !== 'peer-unavailable') {
         toast('Erro de conexão: ' + e.type, true);
       }
@@ -340,23 +796,25 @@
 
     peer.on('disconnected', () => { try { peer.reconnect(); } catch {} });
     peer.on('call', onIncomingCall);
-
     peer.on('connection', conn => {
-      if (isHost) {
-        handleHostIncomingConn(conn);
-      } else {
-        setupDirectDataConn(conn);
-      }
+      if (isHost) handleHostIncomingConn(conn);
+      else setupDirectDataConn(conn);
     });
 
     peer.on('open', id => {
       me.id = id;
       $('app').classList.remove('hidden');
-      const inviteUrl = location.href.split('#')[0] + '#' + roomId;
+      $('meChipName').textContent = me.name;
+      const chipAv = $('meChipAv');
+      chipAv.innerHTML = renderAvatarHtml(me.name, me.avatar);
+      if (!me.avatar) chipAv.style.background = `hsl(${hue(me.name)} 55% 42%)`;
+
+      const inviteUrl = 'https://detalisson.github.io/Compartilhar-a-tela/#' + roomId;
       $('codeText').textContent = roomId;
       const copy = (txt, msg) => { try { navigator.clipboard.writeText(txt); } catch {} toast(msg); };
       $('copyLink').onclick = () => copy(inviteUrl, 'Link da sala copiado!');
       $('copyCode').onclick = () => copy(roomId, 'Código da sala copiado!');
+
       if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) {
         $('mobileWarn').classList.remove('hidden');
         $('startShare').disabled = true;
@@ -367,7 +825,7 @@
     });
   }
 
-  /* ---------- Lógica de Host & Migração Automática ---------- */
+  /* ---------- Host & Migração Automática ---------- */
   let hostTimer = null;
   function startHostLoop() {
     banner('');
@@ -389,19 +847,31 @@
   function handleHostIncomingConn(conn) {
     conn.on('open', () => {
       const name = (conn.metadata && conn.metadata.name) || 'Amigo';
+      const avatar = (conn.metadata && conn.metadata.avatar) || null;
       conn.lastSeen = Date.now();
-      const list = [{ id: me.id, name: me.name }];
-      hubConns.forEach((c, id) => list.push({ id, name: participants.get(id) || 'Amigo' }));
+      const list = [{ id: me.id, name: me.name, avatar: me.avatar }];
+      hubConns.forEach((c, id) => {
+        const p = participants.get(id);
+        list.push({ id, name: p ? p.name : 'Amigo', avatar: p ? p.avatar : null });
+      });
       conn.send({ t: 'peers', list });
-      hubConns.forEach(c => { try { c.send({ t: 'joined', id: conn.peer, name }); } catch {} });
+      hubConns.forEach(c => { try { c.send({ t: 'joined', id: conn.peer, name, avatar }); } catch {} });
       hubConns.set(conn.peer, conn);
-      addParticipant(conn.peer, name, true);
+      addParticipant(conn.peer, name, avatar, true);
     });
     conn.on('data', m => {
       conn.lastSeen = Date.now();
       if (!m) return;
       if (m.t === 'bye') hubDrop(conn.peer);
-      else if (m.t === 'stop_share') {
+      else if (m.t === 'profile') {
+        const cur = participants.get(conn.peer);
+        if (cur) {
+          cur.name = m.name || cur.name;
+          cur.avatar = m.avatar || null;
+          renderPeople();
+          hubConns.forEach(c => { if (c.peer !== conn.peer) try { c.send({ t: 'profile', id: conn.peer, name: cur.name, avatar: cur.avatar }); } catch {} });
+        }
+      } else if (m.t === 'stop_share') {
         removeTile(conn.peer);
         hubConns.forEach(c => { if (c.peer !== conn.peer) try { c.send({ t: 'stop_share', id: conn.peer }); } catch {} });
       }
@@ -419,7 +889,11 @@
 
   function joinHub() {
     if (hubConn) { try { hubConn.close(); } catch {} }
-    hubConn = peer.connect(peerIdOf(roomId), { metadata: { name: me.name }, reliable: true, serialization: 'json' });
+    hubConn = peer.connect(peerIdOf(roomId), {
+      metadata: { name: me.name, avatar: me.avatar },
+      reliable: true,
+      serialization: 'json'
+    });
     const timeout = setTimeout(() => {
       if (!inRoom) fatal('Não consegui entrar na sala. Confira o código.');
     }, 15000);
@@ -429,6 +903,8 @@
       inRoom = true;
       lastHub = Date.now();
       banner('');
+      // Envia também via mensagem caso metadata seja truncado
+      try { hubConn.send({ t: 'profile', name: me.name, avatar: me.avatar }); } catch {}
     });
 
     hubConn.on('data', m => {
@@ -437,9 +913,16 @@
       if (m.t === 'peers') {
         const validIds = new Set(m.list.map(p => p.id));
         [...participants.keys()].forEach(id => { if (!validIds.has(id)) removeParticipant(id, false); });
-        m.list.forEach(p => addParticipant(p.id, p.name, false));
+        m.list.forEach(p => addParticipant(p.id, p.name, p.avatar || null, false));
       } else if (m.t === 'joined') {
-        addParticipant(m.id, m.name, true);
+        addParticipant(m.id, m.name, m.avatar || null, true);
+      } else if (m.t === 'profile') {
+        const cur = participants.get(m.id);
+        if (cur) {
+          cur.name = m.name || cur.name;
+          cur.avatar = m.avatar || null;
+          renderPeople();
+        }
       } else if (m.t === 'left') {
         removeParticipant(m.id, true);
       } else if (m.t === 'stop_share') {
@@ -505,42 +988,42 @@
 
   function broadcastStopShare() {
     const msg = { t: 'stop_share', id: me.id };
-    if (isHost) {
-      hubConns.forEach(c => { try { c.send(msg); } catch {} });
-    } else {
-      try { if (hubConn && hubConn.open) hubConn.send(msg); } catch {}
-    }
+    if (isHost) hubConns.forEach(c => { try { c.send(msg); } catch {} });
+    else try { if (hubConn && hubConn.open) hubConn.send(msg); } catch {}
     peerConns.forEach(c => { try { if (c.open) c.send(msg); } catch {} });
   }
 
-  /* ---------- Quem está na call ---------- */
-  function addParticipant(id, name, announce) {
+  /* ---------- Participantes ---------- */
+  function addParticipant(id, name, avatar, announce) {
     if (id === me.id) return;
     const isNew = !participants.has(id);
-    participants.set(id, name);
-    if (isNew && announce) toast(name + ' entrou');
+    const old = participants.get(id);
+    participants.set(id, { name, avatar: avatar || (old && old.avatar) || null });
+    if (isNew && announce) toast(name + ' entrou na sala');
     renderPeople();
     if (stream) callPeer(id);
   }
+
   function removeParticipant(id, announce) {
-    const name = participants.get(id);
-    if (name === undefined) return;
+    const p = participants.get(id);
+    if (!p) return;
     participants.delete(id);
     warned.delete(id);
     const c = outCalls.get(id);
     if (c) { try { c.close(); } catch {} outCalls.delete(id); applyBitrates(); }
     removeTile(id);
-    if (announce) toast(name + ' saiu');
+    if (announce) toast(p.name + ' saiu');
     renderPeople();
   }
+
   function renderPeople() {
     const box = $('peopleList');
     box.innerHTML = '';
-    const row = (id, name, isMe) => {
+    const row = (id, name, avatar, isMe) => {
       const r = document.createElement('div'); r.className = 'person';
       const av = document.createElement('div'); av.className = 'avatar';
-      av.textContent = (name[0] || '?').toUpperCase();
-      av.style.background = `hsl(${hue(name)} 55% 42%)`;
+      av.innerHTML = renderAvatarHtml(name, avatar);
+      if (!avatar) av.style.background = `hsl(${hue(name)} 55% 42%)`;
       const nm = document.createElement('span'); nm.className = 'pname';
       nm.textContent = name + (isMe ? ' (você)' : '');
       r.append(av, nm);
@@ -549,18 +1032,21 @@
       }
       box.append(r);
     };
-    row(me.id, me.name, true);
-    participants.forEach((n, id) => row(id, n, false));
+    row(me.id, me.name, me.avatar, true);
+    participants.forEach((p, id) => row(id, p.name, p.avatar, false));
     const total = participants.size + 1;
     $('count').textContent = total;
     $('sideTitle').textContent = 'Na call · ' + total;
   }
 
-  /* ---------- Receber telas ---------- */
+  /* ---------- Receber Telas ---------- */
   function onIncomingCall(call) {
     call.answer();
     call.on('stream', s => {
-      addTile(call.peer, (call.metadata && call.metadata.name) || participants.get(call.peer) || 'Amigo', s, call);
+      const p = participants.get(call.peer);
+      const name = (call.metadata && call.metadata.name) || (p && p.name) || 'Amigo';
+      const avatar = (p && p.avatar) || null;
+      addTile(call.peer, name, avatar, s, call);
       const vTrack = s.getVideoTracks()[0];
       if (vTrack) {
         vTrack.onended = () => removeTile(call.peer, call);
@@ -575,13 +1061,14 @@
     call.on('error', () => removeTile(call.peer, call));
   }
 
-  function addTile(key, name, s, call, local = false) {
+  function addTile(key, name, avatar, s, call, local = false) {
     const old = tiles.get(key);
     if (old && old.stream === s) return;
     if (old) removeTile(key);
     const el = document.createElement('div');
     el.className = 'tile';
-    el.innerHTML = '<video autoplay playsinline></video><div class="tag"><b></b><span class="info"></span></div><div class="ctl"></div>';
+    const avBg = avatar ? '' : `style="background:hsl(${hue(name)} 55% 42%)"`;
+    el.innerHTML = `<video autoplay playsinline></video><div class="tag"><span class="tag-av" ${avBg}>${renderAvatarHtml(name, avatar)}</span><b></b><span class="info"></span></div><div class="ctl"></div>`;
     el.querySelector('b').textContent = name;
     const v = el.querySelector('video');
     v.srcObject = s; v.muted = true; v.play().catch(() => {});
@@ -612,15 +1099,15 @@
     $('empty').classList.toggle('hidden', tiles.size > 0);
     if (tiles.size > 0) return;
     if (stream) {
-      $('emptyTitle').textContent = 'Você está compartilhando';
-      $('emptySub').textContent = 'Os outros já estão vendo a sua tela.';
+      $('emptyTitle').textContent = 'Você está compartilhando sua tela';
+      $('emptySub').textContent = 'Os outros participantes já estão assistindo.';
     } else {
       $('emptyTitle').textContent = 'Ninguém está compartilhando ainda';
-      $('emptySub').textContent = 'Quando alguém compartilhar a tela, ela aparece aqui.';
+      $('emptySub').textContent = 'Clique em "Compartilhar tela" abaixo para transmitir para a sala.';
     }
   }
 
-  /* ---------- Enviar minha tela ---------- */
+  /* ---------- Compartilhar Tela ---------- */
   function preferCodec(pc, mime) {
     try {
       const caps = RTCRtpSender.getCapabilities('video').codecs;
@@ -666,9 +1153,9 @@
     $('startShare').classList.add('hidden');
     $('stopShare').classList.remove('hidden');
     LOCKED.forEach(i => $(i).disabled = true);
-    if ($('preview').checked) addTile('local', me.name + ' (prévia)', stream, null, true);
+    if ($('preview').checked) addTile('local', me.name + ' (prévia)', me.avatar, stream, null, true);
     refreshEmpty();
-    participants.forEach((n, id) => callPeer(id));
+    participants.forEach((p, id) => callPeer(id));
     renderPeople();
   };
 
@@ -690,7 +1177,8 @@
       if (pc.connectionState === 'connected') { warned.delete(id); applyBitrates(); }
       if (pc.connectionState === 'failed' && participants.has(id) && !warned.has(id)) {
         warned.add(id);
-        toast('Não consegui conectar com ' + participants.get(id), true);
+        const p = participants.get(id);
+        toast('Não consegui conectar com ' + (p ? p.name : 'participante'), true);
       }
     });
     applyBitrates();
@@ -734,7 +1222,7 @@
       const cable = [...$('audioDev').options].find(o => /cable|virtual|voicemeeter/i.test(o.textContent));
       if (cable) cable.selected = true;
     } catch {
-      toast('Permita o acesso ao microfone no navegador.', true);
+      toast('Permita o acesso ao microfone.', true);
       $('audioSrc').value = 'display';
       $('audioDevField').classList.add('hidden');
     }
